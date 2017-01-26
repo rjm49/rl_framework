@@ -26,6 +26,9 @@ class IdealLearner(object):
         else:
             return False
     
+    def reset_knowledge(self):
+        self.known_concepts = []
+    
     def can_learn(self, c):
         if self.knows(c): # already known
             return False

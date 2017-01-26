@@ -3,14 +3,12 @@ Created on 14 Nov 2016
 
 @author: Russell
 '''
-from abc import abstractmethod
-from reinf.exp1.classes import Concept
-from random import randint
-import random
-import copy
-from math import sqrt
-from pip._vendor.html5lib.treebuilders._base import ActiveFormattingElements
 from _collections import defaultdict
+from abc import abstractmethod
+from math import sqrt
+import random
+
+from reinf.exp1.classes import Concept
 
 class Domain(object):
     '''
@@ -22,9 +20,10 @@ class Domain(object):
         Constructor
         '''
         self.concepts = []
+        self.name = "Un-named"
         
     @abstractmethod
-    def regenerate(self, n):
+    def regenerate(self, n, branch_factor=2):
         self.concepts = []
 
 class ChainDomain(Domain):
@@ -41,7 +40,7 @@ class ChainDomain(Domain):
             
 class FreeDomain(Domain):
     '''This Domain model has total independent Concepts that can be approached in any order'''
-    def regenerate(self, n):
+    def regenerate(self, n, branch_factor):
         Domain.regenerate(self, n)
         for c_id in range(n):
             c = Concept(c_id)
@@ -100,6 +99,9 @@ class RandomNetwork(Domain):
         
 class BranchMergeNetwork(Domain):
     
+    def __init__(self, branch_factor=2):
+        self.branch_factor = branch_factor
+    
     def regenerate(self, n):
         Domain.regenerate(self, n)
 
@@ -108,34 +110,38 @@ class BranchMergeNetwork(Domain):
             c = Concept(c_id)
             self.concepts.append(c)
             deck.append(c)
-            
+                   
         #random.shuffle(deck) # shuffle the concepts into random order
         
-        n_entry = randint(1,int(sqrt(len(deck))))
+        n_entry = random.randint(1,int(sqrt(len(deck))))
         active_nodes = [deck.pop(0) for _ in range(n_entry)]
         
 #         print(n_entry,"entry nodes", [e.id for e in active_nodes])
         
         while(deck):
-            op = randint(0,2)
+            op = random.randint(0,2)
 #             print([n.id for n in active_nodes],[d.id for d in deck], op)
             if(op==0): #merge
                 if(len(active_nodes)>=2) and deck:
-                    p1 = active_nodes.pop(0)
-                    p2 = active_nodes.pop(0)
+                    ps=[]
+                    for _ in range(self.branch_factor):
+                        if active_nodes:
+                            ps.append( active_nodes.pop(0) )
+                    
                     child = deck.pop(0)
-                    child.predecessors.append(p1)
-                    child.predecessors.append(p2)
+                    for p in ps:
+                        child.predecessors.append(p)
                     active_nodes.append(child)
+
             elif(op==1): #split
                 if len(deck)>=2:
                     p1 = active_nodes.pop(0)
-                    c1 = deck.pop(0)
-                    c2 = deck.pop(0)
-                    c1.predecessors.append(p1)
-                    c2.predecessors.append(p1)
-                    active_nodes.append(c1)
-                    active_nodes.append(c2)
+                    cs = []
+                    for _ in range(self.branch_factor):
+                        if deck:
+                            c = deck.pop(0)
+                            c.predecessors.append(p1)
+                            active_nodes.append(c)
             else: #crain
                 if deck:
                     p = active_nodes.pop(0)
@@ -192,31 +198,3 @@ def tikz_representation(mod):
                 s+="(%d) edge node {} (%d)\n" % (c.id, cc.id)
     s+=";"
     print(s)
-
-
-def gviz_representation(mod):    
-    child_lookup =defaultdict(lambda: None)
-    active_nodes = []
-    for c in mod.concepts:
-        if c.predecessors:
-            for p in c.predecessors:
-                if p not in child_lookup.keys():
-                    child_lookup[p]=[c]
-                else:
-                    child_lookup[p].append(c)
-
-    print("digraph {\n node [shape=\"circle\"];")
-    for p in mod.concepts:
-        c_list = child_lookup[p]
-        if(c_list):
-            c_str = " ".join(str(c.id) for c in c_list)
-            print(p.id,"->{", c_str ,"}")
-    print("}")
-    
-            
-if __name__=='__main__':
-    dom = BranchMergeNetwork()
-    dom.regenerate(100)
-    print(len(dom.concepts))
-        
-    gviz_representation(dom)
