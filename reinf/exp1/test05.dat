@@ -1,0 +1,10 @@
+BranchMergeNetwork
+BranchMergeNetwork
+5
+2
+digraph {
+		0 -> 2
+		1 -> 3
+		2 -> 3
+		3 -> 4
+}

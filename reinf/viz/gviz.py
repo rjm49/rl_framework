@@ -30,14 +30,14 @@ def gviz_representation(mod):
     rstr+="}\n"
     return rstr
 
-def gvrender(mod):
+def gvrender(mod, fname='g1'):
     g1 = graphviz.Digraph(format='png')
     for c in mod.concepts:
         g1.node(str(c.id))
         for p in c.predecessors:
             g1.edge(str(p.id), str(c.id))
     print(g1.source)
-    filename = g1.render(filename='g1')
+    filename = g1.render(filename=fname)
 
 if __name__=='__main__':
     dom = BranchMergeNetwork(4)

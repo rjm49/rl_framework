@@ -6,7 +6,7 @@ Created on 11 Nov 2016
 import matplotlib.pyplot as plt
 from reinf.exp1.IdealLearner import IdealLearner
 from reinf.exp1.domain_models import BranchMergeNetwork
-from reinf.exp1.tabular_tutor import TabularTutor, RandomTutor
+from reinf.exp1.tabular_tutor import SarsaTutor, RandomTutor
 from reinf.viz.gviz import gviz_representation, gvrender
 import sys
 from reinf.exp1.train_and_test import learn_k_steps, run_model
@@ -84,7 +84,7 @@ if __name__ == '__main__':
                 batch_x=[]
                 batch_msgs=[]
                 batch_score=[]
-                tutor = TabularTutor(N, alpha, eps) if batch["tutor"]=="tabular" else RandomTutor(N)
+                tutor = SarsaTutor(N, alpha, eps) if batch["tutor"]=="tabular" else RandomTutor(N)
                 
                 
                 for model in models:

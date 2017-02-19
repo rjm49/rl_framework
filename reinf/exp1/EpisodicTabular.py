@@ -9,7 +9,7 @@ from reinf.exp1.IdealLearner import IdealLearner
 from reinf.exp1.domain_models import ChainDomain, FreeDomain, Div2Tree, Con2Tree, \
     BranchMergeNetwork
 from matplotlib import legend
-from reinf.exp1.tabular_tutor import TabularTutor, RandomTutor
+from reinf.exp1.tabular_tutor import SarsaTutor, RandomTutor
 from _collections import defaultdict
 
 def printNode(c):
@@ -46,12 +46,12 @@ batches = [
 
 def learn_k_steps(K, tut, stu, dom):
     for k in range(K):
-        ct = tut.pick_another(dom.concepts)
+        ct = tut.choose_A(dom.concepts)
 #                     print("concept picked=",ct.id)
         succ = stu.try_learn(ct)
         if succ:
 #                         print("learned",ct.id,"successfully")
-            tut.student_learned(ct, k)       
+            tut.student_tried(ct, k)       
 #                 print("".join(['X' if student.knows(n) else "-" for n in model.concepts]))
 #                 print([(c.id,[p.id for p in c.predecessors]) for c in model.concepts])
     
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     model = BranchMergeNetwork(3)
     model.regenerate(N)
             
-    tutor = TabularTutor()
+    tutor = SarsaTutor()
 #     tutor = RandomTutor()
     batch_msgs = []
     batch_x = []

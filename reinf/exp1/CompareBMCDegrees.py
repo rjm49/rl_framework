@@ -3,13 +3,13 @@ Created on 11 Nov 2016
 
 @author: Russell
 '''
-from reinf.exp1.classes import Concept
-import matplotlib.pyplot as plt
-from reinf.exp1.IdealLearner import IdealLearner
-from reinf.exp1.domain_models import ChainDomain, FreeDomain, Div2Tree, Con2Tree,\
+from matplotlib import pyplot as plt
+
+from reinf.exp1.domain_models import FreeDomain, ChainDomain, Div2Tree, Con2Tree, \
     BranchMergeNetwork
-from matplotlib import legend
-from reinf.exp1.tabular_tutor import TabularTutor, RandomTutor
+from reinf.exp1.students.ideal import IdealLearner
+from reinf.exp1.tutors.random import RandomTutor
+
 
 def printNode(c):
     print(c.id)
@@ -170,17 +170,17 @@ if __name__ == '__main__':
                 model.regenerate(N)
                 #we begin in a state of blissful ignorance
                 student = IdealLearner()
-#                 tutor = TabularTutor()
+#                 tutor = SarsaTutor()
                 tutor = RandomTutor()
                 
                 #and then by random chance the horror of life unfolds...
                 for k in range(K):
-                    ct = tutor.pick_another(model.concepts)
+                    ct = tutor.choose_A(model.concepts)
 #                     print("concept picked=",ct.id)
                     succ = student.try_learn(ct)
                     if succ:
 #                         print("learned successfully")
-                        tutor.student_learned(ct, k)
+                        tutor.student_tried(ct)
                 
 #                 print("".join(['X' if student.knows(n) else "-" for n in model.concepts]))
 #                 print([(c.id,[p.id for p in c.predecessors]) for c in model.concepts])

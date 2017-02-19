@@ -4,29 +4,25 @@ Created on 11 Nov 2016
 @author: Russell
 '''
 import matplotlib.pyplot as plt
-from reinf.exp1.IdealLearner import IdealLearner
 from reinf.exp1.domain_models import BranchMergeNetwork
-from reinf.exp1.tabular_tutor import TabularTutor, RandomTutor
-from reinf.viz.gviz import gviz_representation, gvrender
-import sys
-from reinf.exp1.train_and_test import learn_k_steps, run_model, train_tutor
-
-def printNode(c):
-    print(c.id)
-    for p in c.predecessors:
-        printNode(p)
+from reinf.exp1.students.ideal import IdealLearner
+from reinf.exp1.train_and_test import run_model
+from reinf.exp1.tutors.random import RandomTutor
+from reinf.exp1.tutors.tabular import SarsaTutor
 
 
+training_length = 2000
 
-training_length = 1000
-
-num_models = 1
+num_models = 100
 trials_per_model = 10
-trial_length=5000
+trial_length=450
 
-N = 100 # number of nodes
+num_missions=100
+num_iter=float('inf')
+
+N =100 # number of nodes
 branch_factor = 3
-epsilons = [3.0]
+epsilons = [-5]
 alphas = [0.5]
 
 batches = [
@@ -56,7 +52,6 @@ batches = [
     
     
 if __name__ == '__main__':
-    k_steps = 10
     master_log = []
     
     models = []
@@ -80,9 +75,9 @@ if __name__ == '__main__':
                 tutor=None
                 if batch["tutor"]=="tabular":
                     print("training tutor")
-                    tutor = TabularTutor(N, alpha, eps)
+                    tutor = SarsaTutor(N, alpha, eps)
                     stu = IdealLearner()
-                    train_tutor(models, tutor, stu, training_length)
+                    tutor.train(models, stu, num_missions, num_iter)
                     print("done.")
                 else:
                     tutor=RandomTutor(N)
@@ -91,7 +86,7 @@ if __name__ == '__main__':
                 for model in models:
         #             gvrender(model)
                     model.name = "{} (a={}, e={})".format(batch_name,alpha,eps)                    
-                    run_name, model_x, model_y = run_model(model, tutor, alpha, eps, trials_per_model, trial_length, k_steps)
+                    run_name, model_x, model_y = run_model(model, tutor, trials_per_model, trial_length, step_width=10)
                     
                     if not batch_x:
                         batch_x = model_x
@@ -109,6 +104,6 @@ if __name__ == '__main__':
     
     plt.ylabel('ave score ({} models of {} concepts, {} trials each)'.format(num_models, N, trials_per_model))
     plt.xlabel('learning iterations')
-    leg = plt.legend(loc='right')
+    leg = plt.legend(loc='lower right')
     leg.get_frame().set_alpha(0.3)
     plt.show()

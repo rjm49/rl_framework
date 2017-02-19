@@ -101,6 +101,7 @@ class BranchMergeNetwork(Domain):
     
     def __init__(self, branch_factor=2):
         self.branch_factor = branch_factor
+        self.name = 'BranchMergeNetwork'
     
     def regenerate(self, n):
         Domain.regenerate(self, n)

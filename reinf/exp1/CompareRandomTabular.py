@@ -6,7 +6,7 @@ Created on 11 Nov 2016
 import matplotlib.pyplot as plt
 from reinf.exp1.IdealLearner import IdealLearner
 from reinf.exp1.domain_models import BranchMergeNetwork
-from reinf.exp1.tabular_tutor import TabularTutor, RandomTutor
+from reinf.exp1.tabular_tutor import SarsaTutor, RandomTutor
 from reinf.viz.gviz import gviz_representation, gvrender
 
 def printNode(c):
@@ -44,13 +44,13 @@ batches = [
 
 def learn_k_steps(K,tut,stu,dom):
     for k in range(1,1+K):
-        ct = tut.pick_another(dom.concepts)
+        ct = tut.choose_A(dom.concepts)
 #                     print("concept picked=",ct.id)
         tut.steps += 1
         succ = stu.try_learn(ct)
         if succ:
 #                         print("learned",ct.id,"successfully")
-            tut.student_learned(ct, k)       
+            tut.student_tried(ct, k)       
 #                 print("".join(['X' if student.knows(n) else "-" for n in model.concepts]))
 #                 print([(c.id,[p.id for p in c.predecessors]) for c in model.concepts])
     
@@ -73,7 +73,7 @@ if __name__ == '__main__':
         if not batch["run"]:
             continue
         
-        tutor = TabularTutor(N) if batch["tutor"]=="tabular" else RandomTutor(N)
+        tutor = SarsaTutor(N) if batch["tutor"]=="tabular" else RandomTutor(N)
         
         batch_msgs=[]
         batch_x=[]
