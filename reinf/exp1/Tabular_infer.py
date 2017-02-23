@@ -17,7 +17,7 @@ from email._header_value_parser import Domain
 from reinf.viz.gviz import gvrender
 import copy
 from decimal import DivisionByZero
-from reinf.exp1.tutors.qutor_goalbased import QutorGoalTutor
+from reinf.exp1.tutors.qutor_goalbased import Qutor
 
 
 def _score_similarity(dref, inf_fl):
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     batch_names =[]
     
 #     tutor = RandomTutor(num_nodes=len(model.concepts))
-    tutor = QutorGoalTutor(len(model.concepts), 0.1, 5000, 1.0, "Qutor")
+    tutor = Qutor(len(model.concepts), 0.1, 5000, 1.0, "Qutor")
    
     for _ in range(200):
         tutor.reset()

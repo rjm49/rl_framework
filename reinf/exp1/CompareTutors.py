@@ -14,7 +14,7 @@ from statistics import mean
 from matplotlib import pyplot
 from reinf.exp1.domains.filterlist_utils import build_inferred_model,\
     print_success_history_totals, intersect_all_history_totals
-from reinf.exp1.tutors.qutor_goalbased import QutorGoalTutor
+from reinf.exp1.tutors.qutor_goalbased import Qutor
 from reinf.exp1.tutors.sarsa_lambda_2 import SarsaL2
 import tracemalloc
 # tracemalloc.start()

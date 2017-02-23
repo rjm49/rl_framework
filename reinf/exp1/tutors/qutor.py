@@ -4,15 +4,13 @@ Created on 30 Nov 2016
 @author: Russell
 '''
 from reinf.exp1.policies.policy_utils import state_as_str
-from reinf.exp1.domains.filterlist_utils import update_filter
 from reinf.exp1.tutors.base import BaseTutor
 
 
-class QutorGoalTutor(BaseTutor):
+class Qutor(BaseTutor):
     '''
-    Tutoring agent with simple tabular state representation and SARSA type on-policy control algorithm
+    Tutoring agent with simple tabular state representation and Q-Learning type off-policy control algorithm
     '''
-
 
     def __init__(self, num_nodes=100, alpha=0.5, eps=100, gamma=1.0, name="SarsaTutor"):
         '''
@@ -21,7 +19,6 @@ class QutorGoalTutor(BaseTutor):
         super().__init__()
                 
 #         self.filterlist = {}
-
 
     def sa_update(self, S,A,R,nx_S, concepts):
         Q0 = self.Q[S][A]
