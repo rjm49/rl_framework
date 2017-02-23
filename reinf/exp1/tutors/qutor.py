@@ -12,11 +12,11 @@ class Qutor(BaseTutor):
     Tutoring agent with simple tabular state representation and Q-Learning type off-policy control algorithm
     '''
 
-    def __init__(self, num_nodes=100, alpha=0.5, eps=100, gamma=1.0, name="SarsaTutor"):
+    def __init__(self, num_nodes=100, alpha=0.5, eps=100, gamma=1.0, name="Qutor"):
         '''
         Constructor
         '''
-        super().__init__()
+        super().__init__(num_nodes, alpha, eps, gamma, name)
                 
 #         self.filterlist = {}
 

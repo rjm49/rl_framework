@@ -17,7 +17,8 @@ from email._header_value_parser import Domain
 from reinf.viz.gviz import gvrender
 import copy
 from decimal import DivisionByZero
-from reinf.exp1.tutors.qutor_goalbased import Qutor
+from reinf.exp1.tutors.qutor import Qutor
+from reinf.exp1.tutors.sarsa_lambda_2 import SarsaL2
 
 
 def _score_similarity(dref, inf_fl):
@@ -72,9 +73,11 @@ if __name__ == '__main__':
     train_logs = []
     batch_names =[]
     
-#     tutor = RandomTutor(num_nodes=len(model.concepts))
-    tutor = Qutor(len(model.concepts), 0.1, 5000, 1.0, "Qutor")
-   
+    num_nodes=len(model.concepts)
+#     tutor = RandomTutor(num_nodes=num_nodes)
+    tutor = Qutor(num_nodes, 0.1, 5000, 1.0, "Qutor")
+#     tutor = SarsaL2(num_nodes, 0.5, 5000, 1.0, "SarsaL2")
+    
     for _ in range(200):
         tutor.reset()
         p = IdealLearner()

@@ -20,6 +20,7 @@ class BaseTutor(AbstractTutor):
         self.Q = {} #here live the { thisS: [actions] } pairs for each tabular thisS...
         self.EPS = eps
         self.learn_rate = alpha
+        self.gamma = gamma
         self.num_nodes = num_nodes
                 
         self.thisS = tuple([False] * num_nodes)

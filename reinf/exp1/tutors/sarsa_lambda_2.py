@@ -16,7 +16,7 @@ from reinf.exp1.tutors.base import BaseTutor
 
 class SarsaL2(BaseTutor):
     '''
-    Tutoring agent with simple tabular state representation and SARSA type on-policy control algorithm
+    Tutoring agent with simple tabular state representation and SARSA type on-policy control algorithm, with Eligibility Trace (Lambda)
     '''
 
 
@@ -24,20 +24,21 @@ class SarsaL2(BaseTutor):
         '''
         Constructor
         '''
-        self.DEBUG=False
-        #self.student_knowledge = [False for _ in range(num_nodes)]
-        self.Q = {} #here live the { thisS: [actions] } pairs for each tabular thisS...
-        self.EPS = eps
-        self.learn_rate = alpha
-        self.gamma = gamma
-        self.num_nodes = num_nodes
-                
-        self.thisS = "X" # tuple([False] * num_nodes)
-        self.lastS = ()
-        self.lastA = None
-        self.lastR = None
-        
-        self.filterlist = {}
+        super().__init__(num_nodes, alpha, eps, gamma, name)
+#         self.DEBUG=False
+#         #self.student_knowledge = [False for _ in range(num_nodes)]
+#         self.Q = {} #here live the { thisS: [actions] } pairs for each tabular thisS...
+#         self.EPS = eps
+#         self.learn_rate = alpha
+#         self.gamma = gamma
+#         self.num_nodes = num_nodes
+#                 
+#         self.thisS = "X" # tuple([False] * num_nodes)
+#         self.lastS = ()
+#         self.lastA = None
+#         self.lastR = None
+#         
+#         self.filterlist = {}
         self.name = name
         
         self.history = []
@@ -84,7 +85,7 @@ class SarsaL2(BaseTutor):
         #max_steps = float('inf') if max_steps<=0 else max_steps # hack up an infinite number of attempts here
         step_cnt=0
         
-        lastA = None
+
         A, exp = self.choose_A(S, actions) # for SARSA we must pick the initial task outside the loop
         As = []
         Ss = []
@@ -100,16 +101,16 @@ class SarsaL2(BaseTutor):
             #RECORD KEEPING
             As.append(A.id)
             Ss.append(state_as_str(S))
-#             Qs.append( self.get_SA_val(S, A) )
+
             Qs.append( self.Q[S][A] )
             
             #INFERENCE
-            if A.id not in self.filterlist:
-                self.filterlist[A.id]= [True]*len(actions)
+#             if A.id not in self.filterlist:
+#                 self.filterlist[A.id]= [True]*len(actions)
             
             #STATE UPDATE/Q VALS
             msgs.append("Attempt {} {} -> ? Q= {}".format( state_as_str(S), A.id, self.Q[S][A] ) )
-#             R=-1.0
+
             print(self.name, end=" - ")
             succ = stu.try_learn(A)
             if succ:
@@ -121,7 +122,7 @@ class SarsaL2(BaseTutor):
                 if(False not in new_S):
                     R = 100.0 #basically if we've learned everything, get a big treat
                 if self.DEBUG: print("success learned", A.id,"--> new S=",state_as_str(new_S))
-                update_filter(self.filterlist, S, A.id, succ)# we use successful transitions as evidence to eliminate invalidly hypothesised dependencies
+#                 update_filter(self.filterlist, S, A.id, succ)# we use successful transitions as evidence to eliminate invalidly hypothesised dependencies
             else:
                 new_S = S
                 R= -1.0    
@@ -135,12 +136,10 @@ class SarsaL2(BaseTutor):
             if update_qvals:
                 self.sa_update(S, A, R, new_S, new_A)
             
-#               self.lastS = self.thisS
             S = new_S
-            lastA = A
             A = new_A
             step_cnt+=1
-#             print(state_as_str(self.thisS), step_cnt)
+
         if step_cnt==max_steps:
             print("Terminated at step limit!")
         print("SARSA-L: Episode over in",step_cnt,"steps")
