@@ -3,14 +3,7 @@ Created on 30 Nov 2016
 
 @author: Russell
 '''
-from random import randint
-import random
-from reinf.exp1.tutors.abstract import AbstractTutor
 from reinf.exp1.policies.policy_utils import state_as_str
-from reinf.exp1.classes import Concept
-from _tracemalloc import get_traceback_limit
-import copy
-from reinf.exp1.domains.filterlist_utils import update_filter
 from reinf.exp1.tutors.base import BaseTutor
 
 
@@ -79,6 +72,7 @@ class SarsaL2(BaseTutor):
         
 
     def run_episode(self, model, stu, max_steps=-1, update_qvals=True):
+        self._new_trace()
         actions = model.concepts
         S = tuple([False] * len(actions)) #reset the tutor's state .. we assume the student knows nothing
         self.extend_Q(S, actions)
@@ -113,6 +107,7 @@ class SarsaL2(BaseTutor):
 
             print(self.name, end=" - ")
             succ = stu.try_learn(A)
+            self._add_to_trace(S, A, succ)
             if succ:
                 
                 new_S = self.get_next_state(S,A)

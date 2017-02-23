@@ -62,10 +62,6 @@ def _score_similarity(dref, inf_fl):
     return p,r,F
 
 if __name__ == '__main__':
-    #create some chain of Concepts
-    
-    #create a single model upon which all our efforts will focus
-    
     
     fname = "itec2011"
     model = load_domain_model_from_file(fname+".dat")    
@@ -75,8 +71,8 @@ if __name__ == '__main__':
     
     num_nodes=len(model.concepts)
 #     tutor = RandomTutor(num_nodes=num_nodes)
-    tutor = Qutor(num_nodes, 0.1, 5000, 1.0, "Qutor")
-#     tutor = SarsaL2(num_nodes, 0.5, 5000, 1.0, "SarsaL2")
+#     tutor = Qutor(num_nodes, 0.1, 5000, 1.0, "Qutor")
+    tutor = SarsaL2(num_nodes, 0.5, 5000, 1.0, "SarsaL2")
     
     for _ in range(200):
         tutor.reset()
@@ -84,10 +80,10 @@ if __name__ == '__main__':
         tutor.run_episode(model, p, -1, False)
     
     trace = tutor.transition_trace
-    n = tutor.num_nodes
+    
     fl = {}
     for c in model.concepts:
-        fl[c.id]=[True]*n
+        fl[c.id]=[True]*num_nodes
         
     ps=[]
     rs=[]
@@ -95,8 +91,8 @@ if __name__ == '__main__':
     clns=[]
 
     steps=[] #keep a list of all steps made across all episodes    
-    for e in trace:
-        steps += e
+    for episode in trace: # join all the separate episodes together
+        steps += episode
     
     for step in steps:
         s_str,a_id,succ = step
@@ -107,17 +103,14 @@ if __name__ == '__main__':
             print(a_id, state_as_str(s_blns),state_as_str(record),"->",state_as_str(new))
             fl[a_id]=new
 
-#             cln=fl
-        cln = clean_filterlist(fl)
-#         clns.append(cln)
+        cln = clean_filterlist(fl) #remove redundant arcs
         p,r,F=_score_similarity(model, cln)
         ps.append(p)
         rs.append(r)
         Fs.append(F)
     
-#     for c in clns:
-#         print(c)
-    
+#   
+
     
     fl = clean_filterlist(fl)
 #     for a_id in sorted(fl):
@@ -126,7 +119,7 @@ if __name__ == '__main__':
 #     input("hit key")
 
     dummod = Domain()
-    dummod.concepts = [Concept(i) for i in range(n) ]
+    dummod.concepts = [Concept(i) for i in range(num_nodes) ]
     for k,v in fl.items():
         print(k, state_as_str(v))
         con = dummod.concepts[k]
@@ -136,7 +129,6 @@ if __name__ == '__main__':
     gvrender(dummod, "inferred_from_trace")
    
 
-        #         print(s[3])
     plt.ylabel("Dependency detection")
     plt.xlabel('# Steps')
 

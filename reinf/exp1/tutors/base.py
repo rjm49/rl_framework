@@ -16,7 +16,6 @@ class BaseTutor(AbstractTutor):
         Constructor
         '''
         self.DEBUG=False
-        #self.student_knowledge = [False for _ in range(num_nodes)]
         self.Q = {} #here live the { thisS: [actions] } pairs for each tabular thisS...
         self.EPS = eps
         self.learn_rate = alpha
@@ -33,12 +32,9 @@ class BaseTutor(AbstractTutor):
         return "{} e{} a{} g{}".format(self.name,self.EPS,self.learn_rate,self.gamma)
     
     def reset(self):
-        #self.student_knowledge[:] = [False] * len(self.student_knowledge)
         self.thisS = tuple([False] * self.num_nodes)
         self.lastS = ()
-#         self.lastA = None
-#         self.lastR = None
-
+#       
     #BEGIN EPISODE TRACING CODE    
     def _new_trace(self):
         self.transition_trace.append([])
