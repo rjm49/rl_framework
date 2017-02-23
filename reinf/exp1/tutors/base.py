@@ -28,7 +28,10 @@ class BaseTutor(AbstractTutor):
 
         self.name = name
         self.transition_trace = [] #we keep the back history, of each move, of every episode, right here
-        
+    
+    def __str__(self):
+        return "{} e{} a{} g{}".format(self.name,self.EPS,self.learn_rate,self.gamma)
+    
     def reset(self):
         #self.student_knowledge[:] = [False] * len(self.student_knowledge)
         self.thisS = tuple([False] * self.num_nodes)
