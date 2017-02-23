@@ -14,24 +14,17 @@ class QutorGoalTutor(BaseTutor):
     '''
 
 
-    def __init__(self, num_nodes=100, alpha=0.5, eps=0.01, gamma=1.0, name="SarsaTutor"):
+    def __init__(self, num_nodes=100, alpha=0.5, eps=100, gamma=1.0, name="SarsaTutor"):
         '''
         Constructor
         '''
         super().__init__()
-        self.DEBUG=False
-        #self.student_knowledge = [False for _ in range(num_nodes)]
-        self.Q = {} #here live the { thisS: [actions] } pairs for each tabular thisS...
-        self.EPS = eps
-        self.learn_rate = alpha
-        self.gamma = gamma
-        self.num_nodes = num_nodes
                 
         self.thisS = tuple([False] * num_nodes)
         self.lastA = None
         self.lastR = None
         
-        self.filterlist = {}
+#         self.filterlist = {}
         self.name = name
 
 

@@ -11,7 +11,7 @@ from abc import abstractmethod
 
 class BaseTutor(AbstractTutor):
 
-    def __init__(self, num_nodes=100, alpha=0.5, eps=0.01, gamma=1.0, name="BaseTutor"):
+    def __init__(self, num_nodes=100, alpha=0.5, eps=100, gamma=1.0, name="BaseTutor"):
         '''
         Constructor
         '''
