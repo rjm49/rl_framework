@@ -18,6 +18,7 @@ class QutorGoalTutor(BaseTutor):
         '''
         Constructor
         '''
+        super().__init__()
         self.DEBUG=False
         #self.student_knowledge = [False for _ in range(num_nodes)]
         self.Q = {} #here live the { thisS: [actions] } pairs for each tabular thisS...
@@ -47,6 +48,8 @@ class QutorGoalTutor(BaseTutor):
         S = tuple([False] * len(actions)) #reset the tutor's state .. we assume the student knows nothing
         self.extend_Q(S, actions)
         
+        self._new_trace()
+
         max_steps = float('inf') if max_steps<=0 else max_steps # hack up an infinite number of attempts here
         step_cnt=0
         
@@ -57,14 +60,18 @@ class QutorGoalTutor(BaseTutor):
                 self.filterlist[A.id]= [True]*len(actions)
     
             succ = stu.try_learn(A)
-            R=-1.0
-            new_S = S
             if succ:
                 update_filter(self.filterlist, S, A.id, succ)
+                R=-1.0
                 new_S = self.get_next_state(S,A)
+                self._add_to_trace(S, A, True)
                 self.extend_Q(new_S, actions)
                 if (False not in new_S):
                     R=10000.0
+            else:
+                R=-1.0
+                new_S = S
+                self._add_to_trace(S, A, False)
             
             if update_qvals:
                 self.sa_update(S, A, R, new_S, actions)

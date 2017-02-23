@@ -24,11 +24,9 @@ class BaseTutor(AbstractTutor):
                 
         self.thisS = tuple([False] * num_nodes)
         self.lastS = ()
-#         self.lastA = None
-#         self.lastR = None
-        
-        self.filterlist = {}
+
         self.name = name
+        self.transition_trace = [] #we keep the back history, of each move, of every episode, right here
         
     def reset(self):
         #self.student_knowledge[:] = [False] * len(self.student_knowledge)
@@ -36,7 +34,14 @@ class BaseTutor(AbstractTutor):
         self.lastS = ()
 #         self.lastA = None
 #         self.lastR = None
-        
+
+    #BEGIN EPISODE TRACING CODE    
+    def _new_trace(self):
+        self.transition_trace.append([])
+    def _add_to_trace(self, S, A, passed=True ):
+        self.transition_trace[-1].append(tuple([state_as_str(S),A.id, passed]))
+    #END EPISODE TRACING CODE
+    
     def get_best_A_for_S(self, S, actions):
         if self.DEBUG: print("get best A for ", state_as_str(S))
         max_acts = None
@@ -110,6 +115,8 @@ class BaseTutor(AbstractTutor):
 # 
 #     def set_Q(self, S,A, qval):
 #         self.Q[S][A]=qval
+    
+
     
     def choose_A(self, S, actions=None):
         if self.Q=={}:

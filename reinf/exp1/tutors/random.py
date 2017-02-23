@@ -8,9 +8,11 @@ from reinf.exp1.tutors.abstract import AbstractTutor
 import copy
 from reinf.exp1.policies.policy_utils import state_as_str
 from reinf.exp1.domains.filterlist_utils import update_filter
+from reinf.exp1.tutors.base import BaseTutor
 
-class RandomTutor(AbstractTutor):
+class RandomTutor(BaseTutor):
     def __init__(self, num_nodes=100, alpha=None, epsilon=None, gamma=None, name='RandomTutor'):
+        super().__init__()
         self.student_knowledge = [False for _ in range(num_nodes)]
         self.filterlist = {}
         self.num_nodes = num_nodes
@@ -38,6 +40,7 @@ class RandomTutor(AbstractTutor):
         return random.choice(concepts)
 
     def run_episode(self, model, stu, max_steps=-1, update_qvals=True):
+        self._new_trace()
         self.thisS = tuple([False for x in self.thisS]) #reset the tutor's state .. we assume the student knows nothing
         cs = model.concepts
         if max_steps<0:
@@ -50,10 +53,11 @@ class RandomTutor(AbstractTutor):
 
             print(self.name, end=" - ")
             succ = stu.try_learn(A)
+            self._add_to_trace(self.thisS, A, succ)
             R=-1.0
             new_S = self.thisS
             if succ:
-                R = 1.0
+                R = -1.0
                 new_S = self.get_next_state(A)
                 update_filter(self.filterlist, self.thisS, A.id, succ)
             

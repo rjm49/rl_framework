@@ -5,7 +5,6 @@ Created on 24 Jan 2017
 '''
 import sys
 from reinf.exp1.students.ideal import IdealLearner
-from reinf.exp1.tutors.sarsa import SarsaTutor as tutor
 from reinf.exp1.policies.policy_utils import state_as_str, qvals_to_policy
 from reinf.exp1.classes import Concept
 from reinf.viz.gviz import gviz_representation

@@ -29,7 +29,10 @@ def load_concepts_from_file(fname):
         if "->" in line:
             parts = re.sub(" ", "", line).split("->")
             pred = parts[0]
-            chdn = re.sub("[{}]", "", parts[1]).split(" ")
+            print(parts[1])
+            chdn = re.sub("[{}]", "", parts[1])
+            chdn = re.split(" |,",chdn)
+            print("Chdn",chdn)
 
             ip = int(pred)
             if ip in concepts:

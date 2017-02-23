@@ -5,34 +5,60 @@ Created on 11 Nov 2016
 '''
 import codecs
 
-from reinf.exp1.domain_models import BranchMergeNetwork, Domain
-from reinf.exp1.domains.domain_utils import load_concepts_from_file,\
-    score_domain_similarity
-from reinf.exp1.policies.policy_utils import save_policy, state_as_str
+from matplotlib import pyplot as plt
+
+from reinf.exp1.domains.domain_utils import load_domain_model_from_file
 from reinf.exp1.students.ideal import IdealLearner
-from reinf.exp1.train_and_test import run_greedy
-from reinf.exp1.tutors.sarsa import SarsaTutor
-from reinf.viz.gviz import gvrender, gviz_representation
-import matplotlib.pyplot as plt
-from reinf.exp1.tutors.qutor import Qutor
-from reinf.exp1.classes import Concept
+from reinf.exp1.tutors.random import RandomTutor
 from reinf.exp1.domains.filterlist_utils import clean_filterlist
+from reinf.exp1.policies.policy_utils import state_as_str
+from reinf.exp1.classes import Concept
+from email._header_value_parser import Domain
+from reinf.viz.gviz import gvrender
+import copy
+from decimal import DivisionByZero
+from reinf.exp1.tutors.qutor_goalbased import QutorGoalTutor
 
 
-num_models = 1
-trials_per_model = 1
+def _score_similarity(dref, inf_fl):
+    err = 0
+    fp=0
+    tp=0
+    fn=0
+    tn=0
+    arcs=0
+    for cref in dref.concepts:
+        cinf= inf_fl[cref.id]
+        arcs += len(cref.predecessors)
+        real_prids = [c.id for c in cref.predecessors]
+        for i,pguess in enumerate(cinf):
+            if pguess:
+                if (i in real_prids):
+                    tp+=1
+                else:
+                    fp+=1
+            else:
+                if (i not in real_prids):
+                    tn+=1
+                else:
+                    fn+=1
+                
+    try:
+        p = tp / float(tp+fp)
+    except ZeroDivisionError:
+        p = 1.0
 
-NO_MAX=float('inf')
-num_missions = 8000
+    try:
+        r = tp / float(tp+fn)
+    except DivisionByZero:
+        r= 1.0
+#   r = tp/ float(arcs)
+#     print(p,r)
 
-N = 40# number of nodes
-branch_factor = 1
-epsilons = [ 4 ]
-alphas = [0.1]
+    F = 0.0 if (p+r==0) else (2.0*p*r / (p+r))
 
 
-batches=[1,500,1000,3000,5000]
-
+    return p,r,F
 
 if __name__ == '__main__':
     #create some chain of Concepts
@@ -40,60 +66,82 @@ if __name__ == '__main__':
     #create a single model upon which all our efforts will focus
     
     
-
-    mod = BranchMergeNetwork(branch_factor)
-    mod.regenerate(N)
-    saved_struct = load_concepts_from_file("test40.dat")    
-    mod.concepts = saved_struct
-    gvrender(mod, "real")
-    models = [mod]
-    
+    fname = "itec2011"
+    model = load_domain_model_from_file(fname+".dat")    
+    gvrender(model, fname)
     train_logs = []
     batch_names =[]
-    for num_missions in batches:
-
-        for alpha in alphas:
-            for eps in epsilons:
-                tutor = SarsaTutor(N, alpha, eps) # if batch["tutor"]=="tabular" else RandomTutor(N)
-                student = IdealLearner()
-                log = tutor.train(models, student, num_missions, NO_MAX)
-                
+    
+#     tutor = RandomTutor(num_nodes=len(model.concepts))
+    tutor = QutorGoalTutor(len(model.concepts), 0.1, 5000, 1.0, "Qutor")
+   
+    for _ in range(200):
+        tutor.reset()
+        p = IdealLearner()
+        tutor.run_episode(model, p, -1, False)
+    
+    trace = tutor.transition_trace
+    n = tutor.num_nodes
+    fl = {}
+    for c in model.concepts:
+        fl[c.id]=[True]*n
         
-#         f = codecs.open("train_log.txt","w")
-#         for L in log:
-#             f.write(str(L)+"\n")
-#         f.close()
+    ps=[]
+    rs=[]
+    Fs=[]
+    clns=[]
 
-        #save_policy(tutor.qs, "policy_file.dat")
+    steps=[] #keep a list of all steps made across all episodes    
+    for e in trace:
+        steps += e
+    
+    for step in steps:
+        s_str,a_id,succ = step
+        if succ:
+            s_blns = [bool(int(x)) for x in s_str]
+            record = fl[a_id] # lazy initialise
+            new = [(s and r) for s,r in zip(s_blns,record)]            
+            print(a_id, state_as_str(s_blns),state_as_str(record),"->",state_as_str(new))
+            fl[a_id]=new
 
-        tutor.filterlist = clean_filterlist(tutor.filterlist)
+#             cln=fl
+        cln = clean_filterlist(fl)
+#         clns.append(cln)
+        p,r,F=_score_similarity(model, cln)
+        ps.append(p)
+        rs.append(r)
+        Fs.append(F)
+    
+#     for c in clns:
+#         print(c)
+    
+    
+    fl = clean_filterlist(fl)
+#     for a_id in sorted(fl):
+#         print(a_id, state_as_str(fl[a_id]))
 
-        dummod = Domain()
-        dummod.concepts = [Concept(i) for i,c in enumerate(mod.concepts) ]
-                
-        for k,v in tutor.filterlist.items():
-            print(k, state_as_str(v))
-            con = dummod.concepts[k]
-            pixs = [ix for ix,bl in enumerate(v) if bl ] #get ids where state entry is True
-            for i in pixs:
-                con.predecessors.append(dummod.concepts[i])            
-        gvrender(dummod, "inferred"+str(num_missions))
+#     input("hit key")
 
-        err = score_domain_similarity(mod, dummod)
-        train_logs.append([num_missions, err])
-        #input("hit key")
-
-        for i,model in enumerate(models):
-            print("greed run",i)
-            for _ in range(10):
-                run_greedy(model, tutor)
+    dummod = Domain()
+    dummod.concepts = [Concept(i) for i in range(n) ]
+    for k,v in fl.items():
+        print(k, state_as_str(v))
+        con = dummod.concepts[k]
+        pixs = [ix for ix,bl in enumerate(v) if bl ] #get ids where state entry is True
+        for i in pixs:
+            con.predecessors.append(dummod.concepts[i])            
+    gvrender(dummod, "inferred_from_trace")
+   
 
         #         print(s[3])
-    plt.ylabel('Steps to learn {} concepts (BMC{} Domain)'.format(N, branch_factor))
-    plt.xlabel('Mission #')
-    batch_name, num_missions, err = zip(*train_logs)
-#         no, score = zip(*log)
-    plt.plot(num_missions, err, label="SARSA Tutor")
+    plt.ylabel("Dependency detection")
+    plt.xlabel('# Steps')
+
+    step_axis = [ (i+1) for i,v in enumerate(steps)]
+
+    plt.plot( step_axis, ps, label="Precision")
+    plt.plot( step_axis, rs, label="Recall")
+    plt.plot( step_axis, Fs, label="F1")
     leg = plt.legend(loc='right')
     leg.get_frame().set_alpha(0.3)
     plt.show()
