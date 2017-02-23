@@ -11,9 +11,11 @@ class SarsaL2(BaseTutor):
     '''
     Tutoring agent with simple tabular state representation and SARSA type on-policy control algorithm, with Eligibility Trace (Lambda)
     '''
+    def __str__(self):
+        return "{} e{} a{} g{} L{}".format(self.name,self.EPS,self.learn_rate,self.gamma, self.lambda_val)
 
 
-    def __init__(self, num_nodes=100, alpha=0.5, eps=0.01, gamma=1.0, name="SarsaL"):
+    def __init__(self, num_nodes=100, alpha=0.5, eps=0.01, gamma=1.0, name="SarsaL", lambda_val=0.0):
         '''
         Constructor
         '''
@@ -32,10 +34,9 @@ class SarsaL2(BaseTutor):
 #         self.lastR = None
 #         
 #         self.filterlist = {}
-        self.name = name
         
         self.history = []
-        self.lambda_val = 0.0
+        self.lambda_val = lambda_val
         self.history_limit = 1
         
         gxl=self.gamma*self.lambda_val

@@ -57,8 +57,6 @@ def _score_similarity(dref, inf_fl):
 #     print(p,r)
 
     F = 0.0 if (p+r==0) else (2.0*p*r / (p+r))
-
-
     return p,r,F
 
 if __name__ == '__main__':
@@ -71,7 +69,7 @@ if __name__ == '__main__':
     
     num_nodes=len(model.concepts)
 #     tutor = RandomTutor(num_nodes=num_nodes)
-#     tutor = Qutor(num_nodes, 0.1, 5000, 1.0, "Qutor")
+#     tutor = Qutor(num_nodes, 0.1, 7000, 1.0, "Qutor")
     tutor = SarsaL2(num_nodes, 0.5, 5000, 1.0, "SarsaL2")
     
     for _ in range(200):
@@ -108,10 +106,7 @@ if __name__ == '__main__':
         ps.append(p)
         rs.append(r)
         Fs.append(F)
-    
-#   
 
-    
     fl = clean_filterlist(fl)
 #     for a_id in sorted(fl):
 #         print(a_id, state_as_str(fl[a_id]))
@@ -134,9 +129,9 @@ if __name__ == '__main__':
 
     step_axis = [ (i+1) for i,v in enumerate(steps)]
 
-    plt.plot( step_axis, ps, label="Precision")
-    plt.plot( step_axis, rs, label="Recall")
-    plt.plot( step_axis, Fs, label="F1")
+#     plt.plot( step_axis, ps, label="Precision")
+#     plt.plot( step_axis, rs, label="R")
+    plt.plot( step_axis, Fs, label=str(tutor)+"_F1")
     leg = plt.legend(loc='right')
     leg.get_frame().set_alpha(0.3)
     plt.show()

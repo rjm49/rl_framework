@@ -5,7 +5,6 @@ Created on 7 Feb 2017
 '''
 from reinf.exp1.tutors.random import RandomTutor
 from reinf.exp1.domain_models import BranchMergeNetwork
-from reinf.exp1.tutors.sarsa_goalbased import SarsaGoalTutor
 from reinf.exp1.domains.domain_utils import load_concepts_from_file,\
     score_domain_similarity, load_domain_model_from_file, save_domain_to_file
 from reinf.viz.gviz import gvrender
@@ -14,7 +13,6 @@ from statistics import mean
 from matplotlib import pyplot
 from reinf.exp1.domains.filterlist_utils import build_inferred_model,\
     print_success_history_totals, intersect_all_history_totals
-from reinf.exp1.tutors.qutor_goalbased import Qutor
 from reinf.exp1.tutors.sarsa_lambda_2 import SarsaL2
 import tracemalloc
 # tracemalloc.start()
@@ -63,7 +61,7 @@ def main():
                 for lambduh in lambdas:
                     for classname in tutorclasses:
                         klass = eval(classname)
-                        tutor = klass(num_nodes, alpha, eps, gamma, "{} a{} e{} g{}".format(classname, alpha, eps, gamma))
+                        tutor = klass(num_nodes, alpha, eps, gamma, classname)
 #                         if hasattr(tutor, "lambda_val"): #i.e. if this tutor uses an eligibility trace, it needs a decay value
                         try:
                             tutor.lambda_val=lambduh
@@ -97,7 +95,7 @@ def main():
                 paula = IdealLearner()
                 episode_lengths += [tut.run_episode(models[0], paula, max_steps=-1, update_qvals=True)]
                 
-            print(tutor.name,interv,episode_lengths)
+            print(tutor,interv,episode_lengths)
 #             snapshot2 = tracemalloc.take_snapshot()
 #             top_stats = snapshot2.compare_to(snapshot1, 'lineno')
 #             print("[ Top 10 differences ]")
@@ -121,12 +119,12 @@ def main():
 #         print("P-Learner took ",kk,"steps to learn about platypuses!")
     #         no, score = zip(*log)
         icnt, score = zip(*episode_log)
-        ax1.plot(icnt, score, label=tut.name)        
+        ax1.plot(icnt, score, label=str(tut))        
         iv,er=zip(*inferr_log)
-        ax2.plot(iv,er, label=tut.name+"_inferr", linestyle='--')
+        ax2.plot(iv,er, label=str(tut)+"_inferr", linestyle='--')
         
         for i,tr in enumerate(tut.transition_trace):
-            print("Episode trace",i,"for",tut.name)
+            print("Episode trace",i,"for",tut)
             for j,step in enumerate(tr):
                 print(j,step)
         
