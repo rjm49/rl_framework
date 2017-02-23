@@ -20,12 +20,7 @@ class QutorGoalTutor(BaseTutor):
         '''
         super().__init__()
                 
-        self.thisS = tuple([False] * num_nodes)
-        self.lastA = None
-        self.lastR = None
-        
 #         self.filterlist = {}
-        self.name = name
 
 
     def sa_update(self, S,A,R,nx_S, concepts):
@@ -37,7 +32,7 @@ class QutorGoalTutor(BaseTutor):
 
     def run_episode(self, model, stu, max_steps=-1, update_qvals=True):
         actions = model.concepts
-#         lastS = None
+
         S = tuple([False] * len(actions)) #reset the tutor's state .. we assume the student knows nothing
         self.extend_Q(S, actions)
         
@@ -49,12 +44,12 @@ class QutorGoalTutor(BaseTutor):
         while (max_steps<=0 or step_cnt<=max_steps) and (False in S):
             A,exp = self.choose_A(S, actions)
             
-            if A.id not in self.filterlist:
-                self.filterlist[A.id]= [True]*len(actions)
+#             if A.id not in self.filterlist:
+#                 self.filterlist[A.id]= [True]*len(actions)
     
             succ = stu.try_learn(A)
             if succ:
-                update_filter(self.filterlist, S, A.id, succ)
+#                 update_filter(self.filterlist, S, A.id, succ)
                 R=-1.0
                 new_S = self.get_next_state(S,A)
                 self._add_to_trace(S, A, True)
@@ -69,7 +64,6 @@ class QutorGoalTutor(BaseTutor):
             if update_qvals:
                 self.sa_update(S, A, R, new_S, actions)
             
-            #lastS = S
             S = new_S
             step_cnt+=1
             print(state_as_str(self.thisS), step_cnt)
