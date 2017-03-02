@@ -14,6 +14,7 @@ from matplotlib import pyplot
 from reinf.exp1.domains.filterlist_utils import build_inferred_model,\
     print_success_history_totals, intersect_all_history_totals
 from reinf.exp1.tutors.sarsa_lambda_2 import SarsaL2
+from reinf.exp1.tutors.qutor import Qutor
 import tracemalloc
 # tracemalloc.start()
 
@@ -50,8 +51,8 @@ def main():
     tutorclasses=[
                     'RandomTutor',
 #                     'SarsaGoalTutor',
-#                     'QutorGoalTutor',
-#                     'SarsaL2'
+                    'Qutor',
+                    'SarsaL2'
                   ]
     
     tutors=[]
@@ -72,12 +73,15 @@ def main():
     
     paula = IdealLearner()
 
-    fig, ax1 = pyplot.subplots()
+#     fig, ax1 = pyplot.subplots()
     
-    ax2 = ax1.twinx()
-    ax1.set_xlabel('# of episodes')
-    ax1.set_ylabel('Avg lessons to complete {}-node course, BF {}'.format( len(mod.concepts), mod.branch_factor ))
-    ax2.set_ylabel('Error in inferred domain model')
+#     ax2 = ax1.twinx()
+#     ax1.set_xlabel('# of episodes')
+#     ax1.set_ylabel('Avg lessons to complete {}-node course, BF {}'.format( len(mod.concepts), mod.branch_factor ))
+#     ax2.set_ylabel('Error in inferred domain model')
+ 
+    pyplot.xlabel("# episodes")
+    pyplot.ylabel("Avg lessons to complete course")
  
 #     snapshot1 = tracemalloc.take_snapshot()
     for tut in tutors:
@@ -107,9 +111,9 @@ def main():
 
             episode_log.append((interv, mean(episode_lengths)))            
             #MODEL INFERENCE CODE
-            dummod = build_inferred_model(models[0], tut, interv)
-            err = score_domain_similarity(models[0], dummod)
-            inferr_log.append((interv, err))
+#             dummod = build_inferred_model(models[0], tut, interv)
+#             err = score_domain_similarity(models[0], dummod)
+#             inferr_log.append((interv, err))
 
 #             if mean(episode_lengths) < 10:
 #                 break
@@ -119,9 +123,9 @@ def main():
 #         print("P-Learner took ",kk,"steps to learn about platypuses!")
     #         no, score = zip(*log)
         icnt, score = zip(*episode_log)
-        ax1.plot(icnt, score, label=str(tut))        
-        iv,er=zip(*inferr_log)
-        ax2.plot(iv,er, label=str(tut)+"_inferr", linestyle='--')
+        pyplot.plot(icnt, score, label=str(tut)) #ax1.plot       
+#         iv,er=zip(*inferr_log)
+#         ax2.plot(iv,er, label=str(tut)+"_inferr", linestyle='--')
         
         for i,tr in enumerate(tut.transition_trace):
             print("Episode trace",i,"for",tut)

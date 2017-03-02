@@ -5,11 +5,10 @@ Created on 30 Nov 2016
 '''
 from random import randint
 import random
-from reinf.exp1.tutors.abstract import AbstractTutor
 from reinf.exp1.policies.policy_utils import state_as_str
 from abc import abstractmethod
 
-class BaseTutor(AbstractTutor):
+class BaseTutor(object):
 
     def __init__(self, num_nodes=100, alpha=0.5, eps=100, gamma=1.0, name="BaseTutor"):
         '''

@@ -4,7 +4,6 @@ Created on 30 Jan 2017
 @author: Russell
 '''
 import random
-from reinf.exp1.tutors.abstract import AbstractTutor
 import copy
 from reinf.exp1.policies.policy_utils import state_as_str
 from reinf.exp1.domains.filterlist_utils import update_filter
