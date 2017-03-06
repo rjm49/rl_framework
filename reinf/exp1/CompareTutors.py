@@ -5,7 +5,7 @@ Created on 7 Feb 2017
 '''
 from reinf.exp1.tutors.random import RandomTutor
 from reinf.exp1.domain_models import BranchMergeNetwork
-from reinf.exp1.domains.domain_utils import load_concepts_from_file,\
+from reinf.exp1.domains.domain_utils import _load_raw_from_file,\
     score_domain_similarity, load_domain_model_from_file, save_domain_to_file
 from reinf.viz.gviz import gvrender
 from reinf.exp1.students.ideal import IdealLearner
@@ -15,7 +15,10 @@ from reinf.exp1.domains.filterlist_utils import build_inferred_model,\
     print_success_history_totals, intersect_all_history_totals
 from reinf.exp1.tutors.sarsa_lambda_2 import SarsaL2
 from reinf.exp1.tutors.qutor import Qutor
+from reinf.exp1.tutors.dynaqutor import DynaQutor
 import tracemalloc
+import codecs
+import os
 # tracemalloc.start()
 
 def main():
@@ -23,23 +26,25 @@ def main():
 #     alphas=[0.1,0.9]
     epss=[5000]
 #     alphas=[0.1, 0.5, 1.0]
-    alphas=[1.0]
+    alphas=[0.5]
     gammas=[1.0] #discount factors
     lambdas=[0.0]
     #lambdas=[0.0, 0.3, 0.7, 0.99]
-    max_episodes=1000
+    max_episodes=2000
     plotting_interval=10
     
+    log_dir = "..\\..\\compare_logs\\"
+    
     load = True
-    load_file="itec2011.dat"
+    load_file="test100.dat"
     DEBUGG=False
 
     #LOAD The model
     if load:
         mod = load_domain_model_from_file(load_file) 
     else:
-        mod = BranchMergeNetwork(2)
-        mod.regenerate(5)
+        mod = BranchMergeNetwork(4)
+        mod.regenerate(100)
     gvrender(mod, "real")
 #     save_domain_to_file(mod, "test10.dat")
     models = [mod]
@@ -49,10 +54,10 @@ def main():
     intervals=[x for x in range(1,max_episodes+1, plotting_interval)]
 
     tutorclasses=[
-                    'RandomTutor',
-#                     'SarsaGoalTutor',
-                    'Qutor',
-                    'SarsaL2'
+#                     'RandomTutor',
+#                     'Qutor',
+#                     'SarsaL2',
+                    'DynaQutor'
                   ]
     
     tutors=[]
@@ -64,6 +69,7 @@ def main():
                         klass = eval(classname)
                         tutor = klass(num_nodes, alpha, eps, gamma, classname)
 #                         if hasattr(tutor, "lambda_val"): #i.e. if this tutor uses an eligibility trace, it needs a decay value
+                        
                         try:
                             tutor.lambda_val=lambduh
                             tutor.name+=(" L"+str(lambduh))
@@ -71,8 +77,6 @@ def main():
                             print(repr(aerr))
                         tutors.append(tutor)
     
-    paula = IdealLearner()
-
 #     fig, ax1 = pyplot.subplots()
     
 #     ax2 = ax1.twinx()
@@ -86,6 +90,7 @@ def main():
 #     snapshot1 = tracemalloc.take_snapshot()
     for tut in tutors:
         tut.DEBUG=DEBUGG
+        logfile = codecs.open(os.path.join(log_dir,str(tut).replace(" ", "_")+".log"),"w")
         episode_log= [] 
         inferr_log=[]   
         last_interv=0
@@ -96,8 +101,8 @@ def main():
             msgs=[]
 
             for j in range(increm):
-                paula = IdealLearner()
-                episode_lengths += [tut.run_episode(models[0], paula, max_steps=-1, update_qvals=True)]
+                p = IdealLearner()
+                episode_lengths += [tut.run_episode(models[0], p, max_steps=-1, update_qvals=True)]
                 
             print(tutor,interv,episode_lengths)
 #             snapshot2 = tracemalloc.take_snapshot()
@@ -109,7 +114,12 @@ def main():
             
             m = mean(episode_lengths) if len(episode_lengths)>1 else episode_lengths[0]
 
-            episode_log.append((interv, mean(episode_lengths)))            
+            logfile.write("e\n")
+            ep_t_log = tut.transition_trace.pop()
+            for s in ep_t_log:
+                logfile.write(str(s)+"\n")
+
+            episode_log.append((interv, m))            
             #MODEL INFERENCE CODE
 #             dummod = build_inferred_model(models[0], tut, interv)
 #             err = score_domain_similarity(models[0], dummod)
@@ -127,13 +137,16 @@ def main():
 #         iv,er=zip(*inferr_log)
 #         ax2.plot(iv,er, label=str(tut)+"_inferr", linestyle='--')
         
-        for i,tr in enumerate(tut.transition_trace):
-            print("Episode trace",i,"for",tut)
-            for j,step in enumerate(tr):
-                print(j,step)
+#         for i,tr in enumerate(tut.transition_trace):
+#             print("Episode trace",i,"for",tut)
+#             for j,step in enumerate(tr):
+#                 print(j,step)
         
         intersect_all_history_totals(tut.transition_trace)
 
+        logfile.close()
+        del tut
+    
     leg = pyplot.legend(loc='upper right')
     leg.get_frame().set_alpha(0.3)
     pyplot.show()    

@@ -107,5 +107,5 @@ def intersect_all_history_totals(sh):
         pixs = [ix for ix,bl in enumerate(s_str) if bl=="1" ] #get ids where state entry is True
         for i in pixs:
             con.predecessors.append(dummod.concepts[i])
-    gvrender(dummod, "inferred")
+#     gvrender(dummod, "inferred")
     return dummod

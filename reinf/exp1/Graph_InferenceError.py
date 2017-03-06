@@ -6,7 +6,7 @@ Created on 11 Nov 2016
 import codecs
 
 from reinf.exp1.domain_models import BranchMergeNetwork, Domain
-from reinf.exp1.domains.domain_utils import load_concepts_from_file,\
+from reinf.exp1.domains.domain_utils import _load_raw_from_file,\
     score_domain_similarity
 from reinf.exp1.policies.policy_utils import save_policy, state_as_str
 from reinf.exp1.students.ideal import IdealLearner
@@ -69,7 +69,7 @@ if __name__ == '__main__':
         gvrender(models[0], "real")
 
     if LOAD_FROM_FILE:
-        saved_struct = load_concepts_from_file("test100.dat")    
+        saved_struct = _load_raw_from_file("test100.dat")    
         models[0].concepts = saved_struct
         gvrender(models[0], "real")
 

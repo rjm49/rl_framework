@@ -11,7 +11,7 @@ from reinf.exp1.classes import Concept
 from reinf.exp1.policies.policy_utils import state_as_str
 import copy
 
-def load_concepts_from_file(fname):
+def _load_raw_from_file(fname):
     concepts = {}
     f = codecs.open(fname, "r")
     lines = f.readlines()
@@ -78,7 +78,7 @@ def score_domain_similarity(dref, dinf):
     return 1.0+(err/arcs)
 
 def load_domain_model_from_file(fname):
-    name, klassname, num_nodes, branchfactor, concepts = load_concepts_from_file(fname)
+    name, klassname, num_nodes, branchfactor, concepts = _load_raw_from_file(fname)
     klass = eval(klassname)
     if branchfactor: #TODO other domain models need branchfactor support (0 for "no branching")
         dom2 = klass(branchfactor)
@@ -90,10 +90,10 @@ def load_domain_model_from_file(fname):
     return dom2
 
 if __name__=="__main__":
-    dom = BranchMergeNetwork(2)
-    dom.regenerate(10)
-    save_domain_to_file(dom, "f.dat")
-    name, klassname, num_nodes, branchfactor, concepts = load_concepts_from_file("f.dat")
+#     dom = BranchMergeNetwork(2)
+#     dom.regenerate(10)
+#     save_domain_to_file(dom, "f.dat")
+    name, klassname, num_nodes, branchfactor, concepts = _load_raw_from_file("test100.dat")
     
     klass = eval(klassname)
     dom2 = klass(branchfactor)
@@ -104,3 +104,6 @@ if __name__=="__main__":
     dom2.concepts = concepts
     
     print(dom2)
+    
+    dom3 = load_domain_model_from_file("test100.dat")
+    print(dom3)

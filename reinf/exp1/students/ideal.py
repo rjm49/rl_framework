@@ -32,11 +32,11 @@ class IdealLearner(object):
     
     def can_learn(self, c):
         if self.knows(c): # already known
-            sys.stdout.write(str(c.id)+".AK ")
+#             sys.stdout.write(str(c.id)+".AK ")
             return False
         for p in c.predecessors:
             if not self.knows(p): # do not have all the requisite background knowledge
-                sys.stdout.write(str(c.id)+".PU."+str(p.id)+" ")
+#                 sys.stdout.write(str(c.id)+".PU."+str(p.id)+" ")
                 return False        
         return True #good to learn
     

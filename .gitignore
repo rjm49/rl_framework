@@ -19,3 +19,4 @@ local.properties
 *.png
 inferred*
 reinf_env/*
+compare_logs/*
