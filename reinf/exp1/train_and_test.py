@@ -4,7 +4,7 @@ Created on 24 Jan 2017
 @author: Russell
 '''
 import sys
-from reinf.exp1.students.ideal import IdealLearner
+from reinf.exp1.students.ideal import IdealStudent
 from reinf.exp1.policies.policy_utils import state_as_str, qvals_to_policy
 from reinf.exp1.classes import Concept
 from reinf.viz.gviz import gviz_representation
@@ -31,7 +31,7 @@ def run_model(model, tutor, trials_per_model, steps_per_trial, step_width=1):
     sys.stdout.write(run_name)
     for trial in range(trials_per_model):
         #sys.stdout.write("\r{}".format(trial))
-        student = IdealLearner()
+        student = IdealStudent()
         tutor.reset()
         i=0
         steps = 0

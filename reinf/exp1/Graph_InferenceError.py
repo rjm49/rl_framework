@@ -9,7 +9,7 @@ from reinf.exp1.domain_models import BranchMergeNetwork, Domain
 from reinf.exp1.domains.domain_utils import _load_raw_from_file,\
     score_domain_similarity
 from reinf.exp1.policies.policy_utils import save_policy, state_as_str
-from reinf.exp1.students.ideal import IdealLearner
+from reinf.exp1.students.ideal import IdealStudent
 from reinf.exp1.train_and_test import run_greedy
 from reinf.exp1.tutors.sarsa import SarsaTutor
 from reinf.viz.gviz import gvrender, gviz_representation
@@ -74,7 +74,7 @@ if __name__ == '__main__':
         gvrender(models[0], "real")
 
     tutor = SarsaTutor(N, 0.5, 5) # if batch["tutor"]=="tabular" else RandomTutor(N)
-    student = IdealLearner()
+    student = IdealStudent()
 
     
     last_num=0

@@ -5,7 +5,7 @@ Created on 11 Nov 2016
 '''
 import matplotlib.pyplot as plt
 from reinf.exp1.domain_models import BranchMergeNetwork
-from reinf.exp1.students.ideal import IdealLearner
+from reinf.exp1.students.ideal import IdealStudent
 from reinf.exp1.train_and_test import run_model
 from reinf.exp1.tutors.random import RandomTutor
 from reinf.exp1.tutors.tabular import SarsaTutor
@@ -29,7 +29,7 @@ batches = [
                 {
                 'run':True,
                 'batch_name':'BMC3 - Random',
-                'student': IdealLearner(),
+                'student': IdealStudent(),
                 'model': BranchMergeNetwork(3),
                 'tutor': "random",
 #                 'Ks': [10*i for i in range(1,200)] + [1000*i for i in range(2,14)]
@@ -39,7 +39,7 @@ batches = [
                 {
                 'run':True,
                 'batch_name':'BMC3 - Tabular',
-                'student': IdealLearner(),
+                'student': IdealStudent(),
                 'model': BranchMergeNetwork(3),
                 'tutor': "tabular",
 #                 'Ks': [10*i for i in range(1,200)] + [1000*i for i in range(2,14)]
@@ -76,7 +76,7 @@ if __name__ == '__main__':
                 if batch["tutor"]=="tabular":
                     print("training tutor")
                     tutor = SarsaTutor(N, alpha, eps)
-                    stu = IdealLearner()
+                    stu = IdealStudent()
                     tutor.train(models, stu, num_missions, num_iter)
                     print("done.")
                 else:

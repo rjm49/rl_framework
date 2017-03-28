@@ -9,18 +9,17 @@ from math import sqrt
 import random
 
 from reinf.exp1.classes import Concept
+from reinf.viz.gviz import gvrender
 
 class Domain(object):
     '''
     This is an abstract class to hold place for various Knowledge Domain objects.
     These objects have a corpus of Concepts that are related by an underlying necessity/sufficiency structure.
     '''
-    def __init__(self):
-        '''
-        Constructor
-        '''
+    def __init__(self, branch_factor=0):
         self.concepts = []
         self.name = "Un-named"
+        self.branch_factor= branch_factor
         
     @abstractmethod
     def regenerate(self, n, branch_factor=2):
@@ -29,56 +28,64 @@ class Domain(object):
 class ChainDomain(Domain):
     '''This Domain model has Concepts that are linked together in a chain structure, i.e. a linked list.'''
     
-    def regenerate(self, n):
+    def regenerate(self, n, branch_factor=0):
         Domain.regenerate(self, n)
         last_c = None    
         for c_id in range(n):
             c = Concept(c_id)
             self.concepts.append(c)
-            c.predecessors = [last_c]
+            if last_c:
+                c.predecessors.append(last_c)
             last_c = c
             
 class FreeDomain(Domain):
-    '''This Domain model has total independent Concepts that can be approached in any order'''
-    def regenerate(self, n, branch_factor):
+    '''This Domain model has total independent Concepts that can be approached in any order'''    
+    def regenerate(self, n, branch_factor=0):
         Domain.regenerate(self, n)
         for c_id in range(n):
             c = Concept(c_id)
             self.concepts.append(c)
             c.predecessors=[]
             
-class Div2Tree(Domain):
+class DivNTree(Domain):
     def regenerate(self, n):
-        Domain.regenerate(self, n)
+        Domain.regenerate(self, n, branch_factor=0)
         for c_id in range(n):
             c = Concept(c_id)
             self.concepts.append(c)
         
-        #iterate through the children
-        for cp in range(1,len(self.concepts)): #start at 1, leaves root node without a predecessor
-            #p = (cp - 2 + (cp % 2)) // 2
-            child = self.concepts[cp]
-            pp = (cp - 1) // 2 # this generates a binary tree
-            parent = self.concepts[pp]
-            child.predecessors.append(parent)
+        c_pnt=0        
+        for p in self.concepts:
+            for i in range(self.branch_factor):
+                c_pnt+=1
+                if c_pnt >= len(self.concepts):
+                    break
+                else:
+                    ch = self.concepts[c_pnt]
+                    ch.predecessors.append(p)
+                      
 
-class Con2Tree(Domain):
-    def regenerate(self, n):
+class ConNTree(Domain):    
+    def regenerate(self, n, branch_factor=0):
         Domain.regenerate(self, n)
         for c_id in range(n):
             c = Concept(c_id)
             self.concepts.append(c)
             
-        #iterate through the children
-        for pp in range(1,len(self.concepts)): #start at 1, leaves root node without a predecessor
-            #p = (cp - 2 + (cp % 2)) // 2
-            parent = self.concepts[pp]
-            cp = (pp - 1) // 2 # this generates a binary tree
-            child = self.concepts[cp]
-            child.predecessors.append(parent)
+        p_pnt=0
+        rv_concepts = self.concepts[::-1]
+        for c in self.concepts:
+            for i in range(self.branch_factor):
+                p_pnt+=1
+                if p_pnt >= len(self.concepts):
+                    break
+                else:
+                    pt = self.concepts[p_pnt]
+                    c.predecessors.append(pt)
+
 
 class RandomNetwork(Domain):
-    def regenerate(self, n):
+    def regenerate(self, n, branch_factor=0):
         Domain.regenerate(self, n)
         
         childfree = []
@@ -114,13 +121,15 @@ class BranchMergeNetwork(Domain):
                    
         #random.shuffle(deck) # shuffle the concepts into random order
         
-        n_entry = random.randint(1,int(sqrt(len(deck))))
+        #n_entry = random.randint(1,int(sqrt(len(deck))))
+        #n_entry = int(sqrt(len(deck)))
+        n_entry=1
         active_nodes = [deck.pop(0) for _ in range(n_entry)]
         
 #         print(n_entry,"entry nodes", [e.id for e in active_nodes])
         
         while(deck):
-            op = random.randint(0,2)
+            op = random.randint(0,1)
 #             print([n.id for n in active_nodes],[d.id for d in deck], op)
             if(op==0): #merge
                 if(len(active_nodes)>=2) and deck:
@@ -199,3 +208,8 @@ def tikz_representation(mod):
                 s+="(%d) edge node {} (%d)\n" % (c.id, cc.id)
     s+=";"
     print(s)
+    
+if __name__=="__main__":
+    d = ConNTree(branch_factor=3)
+    d.regenerate(10)
+    gvrender(d, fname="c")

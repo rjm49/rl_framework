@@ -7,6 +7,7 @@ from random import randint
 import random
 from reinf.exp1.policies.policy_utils import state_as_str
 from abc import abstractmethod
+from _collections import defaultdict
 
 class BaseTutor(object):
 
@@ -16,6 +17,7 @@ class BaseTutor(object):
         '''
         self.DEBUG=False
         self.Q = {} #here live the { thisS: [actions] } pairs for each tabular thisS...
+        #self._Q = defaultdict(lambda: defaultdict(int))
         self.EPS = eps
         self.learn_rate = alpha
         self.gamma = gamma
@@ -96,9 +98,9 @@ class BaseTutor(object):
         return mission_log
         
 
-    def get_next_state(self,S,A):
+    def get_next_state(self,S,A, succ):
         cp = list(S)
-        cp[A.id]=True
+        cp[A.id]=succ
         return tuple(cp)
     
     def extend_Q(self, S, actions):

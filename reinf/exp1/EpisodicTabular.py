@@ -5,7 +5,7 @@ Created on 11 Nov 2016
 '''
 from reinf.exp1.classes import Concept
 import matplotlib.pyplot as plt
-from reinf.exp1.IdealLearner import IdealLearner
+from reinf.exp1.IdealLearner import IdealStudent
 from reinf.exp1.domain_models import ChainDomain, FreeDomain, Div2Tree, Con2Tree, \
     BranchMergeNetwork
 from matplotlib import legend
@@ -24,7 +24,7 @@ batches = [
                 {
                 'run':True,
                 'batch_name':'BMC3 - Random',
-                'student': IdealLearner(),
+                'student': IdealStudent(),
                 'model': BranchMergeNetwork(3),
                 'tutor': "random",
 #                 'Ks': [10*i for i in range(1,200)] + [1000*i for i in range(2,14)]
@@ -34,7 +34,7 @@ batches = [
                 {
                 'run':True,
                 'batch_name':'BMC3 - Tabular',
-                'student': IdealLearner(),
+                'student': IdealStudent(),
                 'model': BranchMergeNetwork(3),
                 'tutor': "tabular",
 #                 'Ks': [10*i for i in range(1,200)] + [1000*i for i in range(2,14)]
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     master_log = []
     name= "TabTut"
     
-    student = IdealLearner()
+    student = IdealStudent()
        
     total_steps = 0
     score = 0.0

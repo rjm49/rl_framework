@@ -40,35 +40,35 @@ class RandomTutor(BaseTutor):
 
     def run_episode(self, model, stu, max_steps=-1, update_qvals=True):
         self._new_trace()
-        self.thisS = tuple([False for x in self.thisS]) #reset the tutor's state .. we assume the student knows nothing
         cs = model.concepts
+        S = tuple([False for x in cs]) #reset the tutor's state .. we assume the student knows nothing
         if max_steps<0:
             max_steps = float('inf')
         step_cnt=0
-        A = self.choose_A(cs) # pick the initial task
-        while step_cnt<=max_steps and not self.mission_complete():
+        A = random.choice(cs) # pick the initial task
+        
+        while step_cnt<max_steps and not self.mission_complete():
             if A.id not in self.filterlist:
                 self.filterlist[A.id]= [True]*len(cs)
 
-            print(self.name, end=" - ")
+            #print(self.name, end=" - ")
             succ = stu.try_learn(A)
-            self._add_to_trace(self.thisS, A, succ)
+            self._add_to_trace(S, A, succ)
             R=-1.0
-            new_S = self.thisS
+            new_S = S
             if succ:
                 R = -1.0
                 new_S = self.get_next_state(A)
-                update_filter(self.filterlist, self.thisS, A.id, succ)
+                update_filter(self.filterlist, S, A.id, succ)
             
-            new_A = self.choose_A(cs)
+            new_A = random.choice(cs)
 #                     print(state_as_str(new_S))
 #                     self.lastS = self.thisS
-            self.thisS = new_S
-#                     last_A = A
+            S = new_S
             A = new_A
             step_cnt+=1
-            print(state_as_str(self.thisS), step_cnt)
-        print("RandomTutor: Episode over in",step_cnt,"steps")
+            #print(state_as_str(self.thisS), step_cnt)
+        #print("RandomTutor: Episode over in",step_cnt,"steps")
         return step_cnt
 
     def train(self, models, stu, num_episodes=100, max_steps_per_ep=200, reset=True):

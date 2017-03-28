@@ -17,7 +17,7 @@ def update_filter(filterlist, old_S, A_id, succ):
         entry = filterlist[A_id]
         new_S = [a and b for a,b in zip(old_S, entry)]
         filterlist[A_id] = new_S
-        print("\nfilterlist",A_id,"was ",state_as_str(entry),"^",state_as_str(old_S),"=>", state_as_str(new_S))
+        #print("\nfilterlist",A_id,"was ",state_as_str(entry),"^",state_as_str(old_S),"=>", state_as_str(new_S))
         
 def _get_idxs(blist):
     return [i for i,x in enumerate(blist) if x==True]

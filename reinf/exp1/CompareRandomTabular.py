@@ -4,7 +4,7 @@ Created on 11 Nov 2016
 @author: Russell
 '''
 import matplotlib.pyplot as plt
-from reinf.exp1.IdealLearner import IdealLearner
+from reinf.exp1.IdealLearner import IdealStudent
 from reinf.exp1.domain_models import BranchMergeNetwork
 from reinf.exp1.tabular_tutor import SarsaTutor, RandomTutor
 from reinf.viz.gviz import gviz_representation, gvrender
@@ -22,7 +22,7 @@ batches = [
                 {
                 'run':True,
                 'batch_name':'BMC3 - Random',
-                'student': IdealLearner(),
+                'student': IdealStudent(),
                 'model': BranchMergeNetwork(3),
                 'tutor': "random",
 #                 'Ks': [10*i for i in range(1,200)] + [1000*i for i in range(2,14)]
@@ -32,7 +32,7 @@ batches = [
                 {
                 'run':True,
                 'batch_name':'BMC3 - Tabular',
-                'student': IdealLearner(),
+                'student': IdealStudent(),
                 'model': BranchMergeNetwork(3),
                 'tutor': "tabular",
 #                 'Ks': [10*i for i in range(1,200)] + [1000*i for i in range(2,14)]
@@ -84,7 +84,7 @@ if __name__ == '__main__':
         for trial in range(trials_per_model):       
             print(name, "trial:", trial)
             
-            student = IdealLearner()
+            student = IdealStudent()
             
             total_steps = 0
             i=0

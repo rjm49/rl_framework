@@ -8,7 +8,7 @@ from reinf.exp1.domain_models import BranchMergeNetwork
 from reinf.exp1.domains.domain_utils import _load_raw_from_file,\
     score_domain_similarity, load_domain_model_from_file, save_domain_to_file
 from reinf.viz.gviz import gvrender
-from reinf.exp1.students.ideal import IdealLearner
+from reinf.exp1.students.ideal import IdealStudent
 from statistics import mean
 from matplotlib import pyplot
 from reinf.exp1.domains.filterlist_utils import build_inferred_model,\
@@ -19,25 +19,26 @@ from reinf.exp1.tutors.dynaqutor import DynaQutor
 import tracemalloc
 import codecs
 import os
+from reinf.exp1.students.forgetting import ForgettingStudent
 # tracemalloc.start()
 
 def main():
 #     epss=[2,100]
 #     alphas=[0.1,0.9]
-    epss=[5000]
+    epss=[1000]
 #     alphas=[0.1, 0.5, 1.0]
     alphas=[0.5]
     gammas=[1.0] #discount factors
-    lambdas=[0.0]
+    lambdas=[0.7]
     #lambdas=[0.0, 0.3, 0.7, 0.99]
-    max_episodes=2000
-    plotting_interval=10
+    max_steps=100000
     
     log_dir = "..\\..\\compare_logs\\"
     
-    load = True
-    load_file="test100.dat"
+    load = False
+    load_file="itec2011.dat"
     DEBUGG=False
+    write = True
 
     #LOAD The model
     if load:
@@ -51,12 +52,12 @@ def main():
     num_nodes = len(mod.concepts)
 
 #     intervals=[x for x in range(1,500,10)]+[x for x in range(1,1001,100)]
-    intervals=[x for x in range(1,max_episodes+1, plotting_interval)]
+#     intervals=[x for x in range(1,max_episodes+1, plotting_interval)]
 
     tutorclasses=[
-#                     'RandomTutor',
-#                     'Qutor',
-#                     'SarsaL2',
+                    'RandomTutor',
+                    'Qutor',
+                    'SarsaL2',
                     'DynaQutor'
                   ]
     
@@ -90,66 +91,23 @@ def main():
 #     snapshot1 = tracemalloc.take_snapshot()
     for tut in tutors:
         tut.DEBUG=DEBUGG
-        logfile = codecs.open(os.path.join(log_dir,str(tut).replace(" ", "_")+".log"),"w")
-        episode_log= [] 
-        inferr_log=[]   
-        last_interv=0
-        for interv in intervals:
-            increm = interv - last_interv
-            last_interv=interv
-            episode_lengths=[]
-            msgs=[]
-
-            for j in range(increm):
-                p = IdealLearner()
-                episode_lengths += [tut.run_episode(models[0], p, max_steps=-1, update_qvals=True)]
-                
-            print(tutor,interv,episode_lengths)
-#             snapshot2 = tracemalloc.take_snapshot()
-#             top_stats = snapshot2.compare_to(snapshot1, 'lineno')
-#             print("[ Top 10 differences ]")
-#             for stat in top_stats[:10]:
-#                 print(stat)
-#             input("Hit return to continue..")
-            
-            m = mean(episode_lengths) if len(episode_lengths)>1 else episode_lengths[0]
-
-            logfile.write("e\n")
-            ep_t_log = tut.transition_trace.pop()
-            for s in ep_t_log:
-                logfile.write(str(s)+"\n")
-
-            episode_log.append((interv, m))            
-            #MODEL INFERENCE CODE
-#             dummod = build_inferred_model(models[0], tut, interv)
-#             err = score_domain_similarity(models[0], dummod)
-#             inferr_log.append((interv, err))
-
-#             if mean(episode_lengths) < 10:
-#                 break
-#         paula.reset_knowledge()
-#         tut.EPS = 0 #set the tutor to greedy policy mode
-#         kk = tut.run_episode(models[0], paula, max_steps=1000, update_qvals=False)
-#         print("P-Learner took ",kk,"steps to learn about platypuses!")
-    #         no, score = zip(*log)
-        icnt, score = zip(*episode_log)
-        pyplot.plot(icnt, score, label=str(tut)) #ax1.plot       
-#         iv,er=zip(*inferr_log)
-#         ax2.plot(iv,er, label=str(tut)+"_inferr", linestyle='--')
+        if write: logfile = codecs.open(os.path.join(log_dir,tut.name.split(" ")[0]+".log"),"w")
         
-#         for i,tr in enumerate(tut.transition_trace):
-#             print("Episode trace",i,"for",tut)
-#             for j,step in enumerate(tr):
-#                 print(j,step)
-        
-        intersect_all_history_totals(tut.transition_trace)
+        step_cnt=0
+        while step_cnt < max_steps:        
+            p = ForgettingStudent()
+            ep_len = tut.run_episode(models[0], p, max_steps=-1, update_qvals=True)
+            print(tutor, ep_len)
 
-        logfile.close()
-        del tut
-    
-    leg = pyplot.legend(loc='upper right')
-    leg.get_frame().set_alpha(0.3)
-    pyplot.show()    
+            if write:
+                logfile.write("e\n")
+                ep_t_log = tut.transition_trace.pop()
+                for s in ep_t_log:
+                    logfile.write(str(s)+"\n")
+            step_cnt += ep_len
+
+        if write: logfile.close()
+        tut=None   
 
 if __name__ == '__main__':
     main()

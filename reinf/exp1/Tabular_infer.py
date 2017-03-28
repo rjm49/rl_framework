@@ -8,7 +8,7 @@ import codecs
 from matplotlib import pyplot as plt
 
 from reinf.exp1.domains.domain_utils import load_domain_model_from_file
-from reinf.exp1.students.ideal import IdealLearner
+from reinf.exp1.students.ideal import IdealStudent
 from reinf.exp1.tutors.random import RandomTutor
 from reinf.exp1.domains.filterlist_utils import clean_filterlist
 from reinf.exp1.policies.policy_utils import state_as_str
@@ -22,6 +22,7 @@ from reinf.exp1.tutors.sarsa_lambda_2 import SarsaL2
 from _collections import defaultdict
 import graphviz
 from test.test_inspect import attrs_wo_objs
+from reinf.exp1.tutors.dynaqutor import DynaQutor
 
 
 def _score_similarity(dref, inf_fl):
@@ -73,15 +74,16 @@ if __name__ == '__main__':
     batch_names =[]
     
     num_nodes=len(model.concepts)
-    tutor = RandomTutor(num_nodes=num_nodes)
+#     tutor = RandomTutor(num_nodes=num_nodes)
 #     tutor = Qutor(num_nodes, 0.5, 100, 1.0, "Qutor") #0.1 7000
 #     tutor = Qutor(num_nodes, 0.1, 7000, 1.0, "Qutor") #0.1 7000
 #     tutor = SarsaL2(num_nodes, 0.5, 5000, 1.0, "SarsaL2")
+    tutor = DynaQutor(num_nodes, 0.5, 1000, 1.0, "DynaQ")
     
     for _ in range(100):
         tutor.reset()
-        p = IdealLearner()
-        tutor.run_episode(model, p, -1, False)
+        p = IdealStudent()
+        tutor.run_episode(model, p, -1, True)
     
     trace = tutor.transition_trace
     

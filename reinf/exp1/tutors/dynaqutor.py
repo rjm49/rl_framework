@@ -7,6 +7,7 @@ from reinf.exp1.tutors.qutor import Qutor
 from _collections import defaultdict
 from reinf.exp1.policies.policy_utils import state_as_str
 import random
+from profile_decr import profile
 
 class DynaQutor(Qutor):
     '''
@@ -46,23 +47,25 @@ class DynaQutor(Qutor):
 #                 self.filterlist[A.id]= [True]*len(actions)
     
             succ = stu.try_learn(A)
+            new_S = self.get_next_state(S,A, succ)
+            self._add_to_trace(S, A, succ)
+            
             if succ:
-#                 update_filter(self.filterlist, S, A.id, succ)
+#               update_filter(self.filterlist, S, A.id, succ)
                 R=-1.0
-                new_S = self.get_next_state(S,A)
-                self._add_to_trace(S, A, True)
                 self.extend_Q(new_S, actions)
                 if (False not in new_S):
                     R=10000.0
             else:
                 R=-1.0
                 new_S = S
-                self._add_to_trace(S, A, False)
+
             
             if update_qvals:
                 self.sa_update(S, A, R, new_S, actions)
                 self._update_model(S, A, R, new_S)
             
+#             print("checkpoint")
             model_keys = list(self.model.keys())
             for _ in range(10):
                 rand_S = random.choice(model_keys)

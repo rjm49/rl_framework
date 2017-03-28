@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 
 from reinf.exp1.domain_models import FreeDomain, ChainDomain, Div2Tree, Con2Tree, \
     BranchMergeNetwork
-from reinf.exp1.students.ideal import IdealLearner
+from reinf.exp1.students.ideal import IdealStudent
 from reinf.exp1.tutors.random import RandomTutor
 
 
@@ -28,7 +28,7 @@ batches1 = [
            {
                 'run':True,
                 'batch_name':'free',
-                'student': IdealLearner(),
+                'student': IdealStudent(),
                 'model': FreeDomain(),
 #                 'Ks': [10*i for i in range(1,100)] + [1000*i for i in range(1,14)]
                 'Ks': [i for i in range(1,10000,50)]
@@ -36,7 +36,7 @@ batches1 = [
            {
                 'run':True,
                 'batch_name':'chained',
-                'student': IdealLearner(),
+                'student': IdealStudent(),
                 'model': ChainDomain(),
 #                 'Ks': [100*i for i in range(1,10)] + [1000*i for i in range(1,14)]
                 'Ks': [i for i in range(1,10000,50)]
@@ -45,7 +45,7 @@ batches1 = [
             {
                 'run':True,
                 'batch_name':'div\'t_bin_tree',
-                'student': IdealLearner(),
+                'student': IdealStudent(),
                 'model': Div2Tree(),
 #                 'Ks': [10*i for i in range(1,200)] + [1000*i for i in range(2,14)]
                 'Ks': [i for i in range(1,10000,50)]
@@ -53,7 +53,7 @@ batches1 = [
             {
                 'run':True,
                 'batch_name':'conv\'t_bin_tree',
-                'student': IdealLearner(),
+                'student': IdealStudent(),
                 'model': Con2Tree(),
 #                 'Ks': [10*i for i in range(1,200)] + [1000*i for i in range(2,14)]
                 'Ks': [i for i in range(1,10000,50)]
@@ -61,7 +61,7 @@ batches1 = [
             {
                 'run':True,
                 'batch_name':'branch/merge/chain',
-                'student': IdealLearner(),
+                'student': IdealStudent(),
                 'model': BranchMergeNetwork(),
 #                 'Ks': [10*i for i in range(1,200)] + [1000*i for i in range(2,14)]
                 'Ks': [i for i in range(1,10000,50)]
@@ -72,7 +72,7 @@ batches = [
                 {
                 'run':True,
                 'batch_name':'branch/merge/chain 2',
-                'student': IdealLearner(),
+                'student': IdealStudent(),
                 'model': BranchMergeNetwork(2),
 #                 'Ks': [10*i for i in range(1,200)] + [1000*i for i in range(2,14)]
                 'Ks': [i for i in range(1,10000,50)]
@@ -81,7 +81,7 @@ batches = [
                 {
                 'run':True,
                 'batch_name':'branch/merge/chain 5',
-                'student': IdealLearner(),
+                'student': IdealStudent(),
                 'model': BranchMergeNetwork(5),
 #                 'Ks': [10*i for i in range(1,200)] + [1000*i for i in range(2,14)]
                 'Ks': [i for i in range(1,10000,50)]
@@ -90,7 +90,7 @@ batches = [
                 {
                 'run':True,
                 'batch_name':'branch/merge/chain 10',
-                'student': IdealLearner(),
+                'student': IdealStudent(),
                 'model': BranchMergeNetwork(10),
 #                 'Ks': [10*i for i in range(1,200)] + [1000*i for i in range(2,14)]
                 'Ks': [i for i in range(1,10000,50)]
@@ -99,7 +99,7 @@ batches = [
                 {
                 'run':True,
                 'batch_name':'branch/merge/chain 15',
-                'student': IdealLearner(),
+                'student': IdealStudent(),
                 'model': BranchMergeNetwork(15),
 #                 'Ks': [10*i for i in range(1,200)] + [1000*i for i in range(2,14)]
                 'Ks': [i for i in range(1,10000,50)]
@@ -108,7 +108,7 @@ batches = [
                 {
                 'run':True,
                 'batch_name':'branch/merge/chain 20',
-                'student': IdealLearner(),
+                'student': IdealStudent(),
                 'model': BranchMergeNetwork(20),
 #                 'Ks': [10*i for i in range(1,200)] + [1000*i for i in range(2,14)]
                 'Ks': [i for i in range(1,10000,50)]
@@ -117,7 +117,7 @@ batches = [
                 {
                 'run':True,
                 'batch_name':'branch/merge/chain 50',
-                'student': IdealLearner(),
+                'student': IdealStudent(),
                 'model': BranchMergeNetwork(50),
 #                 'Ks': [10*i for i in range(1,200)] + [1000*i for i in range(2,14)]
                 'Ks': [i for i in range(1,10000,50)]
@@ -127,7 +127,7 @@ batches = [
                 {
                 'run':True,
                 'batch_name':'branch/merge/chain 100',
-                'student': IdealLearner(),
+                'student': IdealStudent(),
                 'model': BranchMergeNetwork(100),
 #                 'Ks': [10*i for i in range(1,200)] + [1000*i for i in range(2,14)]
                 'Ks': [i for i in range(1,10000,50)]
@@ -169,7 +169,7 @@ if __name__ == '__main__':
             for _ in range(trials_per_model):
                 model.regenerate(N)
                 #we begin in a state of blissful ignorance
-                student = IdealLearner()
+                student = IdealStudent()
 #                 tutor = SarsaTutor()
                 tutor = RandomTutor()
                 

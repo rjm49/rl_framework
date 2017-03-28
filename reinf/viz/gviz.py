@@ -5,7 +5,6 @@ Created on 30 Dec 2016
 '''
 from _collections import defaultdict
 import graphviz
-from reinf.exp1.domain_models import BranchMergeNetwork
 
 
 
@@ -35,13 +34,14 @@ def gvrender(mod, fname='g1'):
     for c in mod.concepts:
         g1.node(str(c.id))
         for p in c.predecessors:
-            g1.edge(str(p.id), str(c.id))
+            p_id = "ROOT" if not p else p.id
+            g1.edge(str(p_id), str(c.id))
     print(g1.source)
     filename = g1.render(filename=fname)
 
-if __name__=='__main__':
-    dom = BranchMergeNetwork(4)
-    dom.regenerate(26)
-    print(len(dom.concepts))
-#     print(gviz_representation(dom))
-    gvrender(dom)
+# if __name__=='__main__':
+#     dom = BranchMergeNetwork(4)
+#     dom.regenerate(26)
+#     print(len(dom.concepts))
+# #     print(gviz_representation(dom))
+#     gvrender(dom)
