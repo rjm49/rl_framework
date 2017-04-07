@@ -14,11 +14,11 @@ def run_greedy(model, tutor):
     A_list = []
     tutor.reset()
     tutor.EPS=0 #set the tutor to greedy policy mode
-    while False in tutor.thisS:
-        #print("from",state_as_str(tutor.thisS))
+    while False in tutor.S:
+        #print("from",state_as_str(tutor.S))
         A = tutor.choose_A(model.concepts)
-        tutor.thisS = tutor.get_next_state(A)
-        #print("chose",A.id if A else -1,"new state",state_as_str(tutor.thisS))
+        tutor.S = tutor.get_next_state(A)
+        #print("chose",A.id if A else -1,"new state",state_as_str(tutor.S))
         A_list.append(A) # just make a list of all the actions we took
         #input("h")
     print([a.id for a in A_list])
@@ -68,18 +68,18 @@ def test_tutor(dom_array, tut, stu, num_missions=100, num_iter=100):
             act = tut.choose_A(dom.concepts) # pick the initial task
             #print("first ACtion =", act.id)
             tut.lastA = act
-            tut.lastS = tut.thisS
+            tut.lastS = tut.S
             while k<=num_iter and not tut.mission_complete():
                 succ = stu.try_learn(act)
                 R = 1.0 if succ else 0.0
-                print(tut.state_as_str(tut.thisS), ": stu tried to learn",act.id,"with succ:",succ)
+                print(tut.state_as_str(tut.S), ": stu tried to learn",act.id,"with succ:",succ)
                 if succ:
                     tut.update_state(act)
                 #tut.student_tried(act, succ)
                 act = tut.choose_A(dom.concepts)
                 #print("new action=",act.id)
-                tut.sa_update(tut.lastS, tut.lastA, R, tut.thisS, act)
-                tut.lastS = tut.thisS
+                tut.sa_update(tut.lastS, tut.lastA, R, tut.S, act)
+                tut.lastS = tut.S
                 tut.lastA = act
                 k+=1
             print("mission",i,"over in",k,"steps")

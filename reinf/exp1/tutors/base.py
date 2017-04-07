@@ -8,6 +8,13 @@ import random
 from reinf.exp1.policies.policy_utils import state_as_str
 from abc import abstractmethod
 from _collections import defaultdict
+from state_reps.BinaryStateRep import BinaryStateRep
+
+class BaseStateRep():
+    def __init__(self):
+        self.S = None
+    def __str__(self):
+        return "BaseStateRep has no state... must be subclassed"
 
 class BaseTutor(object):
 
@@ -16,25 +23,27 @@ class BaseTutor(object):
         Constructor
         '''
         self.DEBUG=False
-        self.Q = {} #here live the { thisS: [actions] } pairs for each tabular thisS...
+        self.Q = {} #here live the { S: [actions] } pairs for each tabular S...
         #self._Q = defaultdict(lambda: defaultdict(int))
         self.EPS = eps
         self.learn_rate = alpha
         self.gamma = gamma
         self.num_nodes = num_nodes
                 
-        self.thisS = tuple([False] * num_nodes)
-        self.lastS = ()
 
         self.name = name
         self.transition_trace = [] #we keep the back history, of each move, of every episode, right here
     
+        self.student = None
+        self.update_qvals = True
+        self.sRep = BaseStateRep()
+    
     def __str__(self):
         return "{} e{} a{} g{}".format(self.name,self.EPS,self.learn_rate,self.gamma)
     
-    def reset(self):
-        self.thisS = tuple([False] * self.num_nodes)
-        self.lastS = ()
+#     def reset(self):
+#         self.S = tuple([False] * self.num_nodes)
+#         self.lastS = ()
 #       
     #BEGIN EPISODE TRACING CODE    
     def _new_trace(self):
@@ -44,15 +53,16 @@ class BaseTutor(object):
     #END EPISODE TRACING CODE
     
     def get_best_A_for_S(self, S, actions):
-        if self.DEBUG: print("get best A for ", state_as_str(S))
+        S = tuple(S)
+        if self.DEBUG: print("get best A for ", str(self.sRep))
         max_acts = None
         max_val = -float("inf")
         #print(self.Q[S])
         #print([a.id for a in actions])
-        if self.DEBUG: print([(a.id, self.Q[S][a]) for a in actions])
-        
+        if self.DEBUG: print(S)
+#        if self.DEBUG: print([(a.id, self.Q[S][a]) for a in actions])
         for a in actions:
-            aval = self.Q[S][a]
+            aval = self.Q[S][a]                
             if aval > max_val:
                 max_acts=[a]
                 max_val=aval
@@ -76,48 +86,38 @@ class BaseTutor(object):
         pass
 
 
-    def run_episode(self, model, stu, max_steps=-1, update_qvals=True):
+    def run_episode(self, model, stu, max_steps=-1, update_qvals=True, reset_student=False):
         #max_steps = float('inf') if max_steps<=0 else max_steps # hack up an infinite number of attempts here
         step_cnt=0
         
         #PUT YOUR LEARNING STUFF HERE
         
         return step_cnt
-    
-    def train(self, models, stu, num_episodes=100, max_steps_per_ep=200, reset=True):
-        for model in models:
-            mission_log = []
-            for i in range(num_episodes):
-                if(reset):
-                    self.reset()
-                    stu.reset_knowledge()
-                print("running ep")
-                steps_taken = self.run_episode(model, stu, max_steps_per_ep, update_qvals=True)
-                print("mission",i,"over in",steps_taken,"steps")
-                mission_log.append((i, steps_taken))
-        return mission_log
         
-
     def get_next_state(self,S,A, succ):
         cp = list(S)
         cp[A.id]=succ
         return tuple(cp)
     
     def extend_Q(self, S, actions):
+        S = tuple(S)
         if S not in self.Q:
             self.Q[S]={}
-            for c in actions:
-                self.Q[S][c]=0.0
-            if self.DEBUG: print("Extended Q for ", S)
+            
+        known_actions = self.Q[S]
+        for c in actions:
+            if c not in known_actions:
+                print(c.id, "not a known action for state,",self.sRep,"..extending Q")
+                self.Q[S][c]= -1.0
+        if self.DEBUG: print("Extended Q for ", S)
 
-    
-#     def Q(self, S,A):
-#         return self.Q[S][A]
-# 
-#     def set_Q(self, S,A, qval):
-#         self.Q[S][A]=qval
-    
 
+    def get_next_lesson(self):
+        lesson, ex = self.choose_A(self.sRep.S, self.possible_actions)
+        return lesson, ex
+    
+    def record_lesson_results(self, success):
+        pass
     
     def choose_A(self, S, actions=None):
         if self.Q=={}:

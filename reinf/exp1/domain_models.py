@@ -65,7 +65,7 @@ class DivNTree(Domain):
                     ch.predecessors.append(p)
                       
 
-class ConNTree(Domain):    
+class ConNTree(Domain):
     def regenerate(self, n, branch_factor=0):
         Domain.regenerate(self, n)
         for c_id in range(n):
@@ -121,17 +121,26 @@ class BranchMergeNetwork(Domain):
                    
         #random.shuffle(deck) # shuffle the concepts into random order
         
-        #n_entry = random.randint(1,int(sqrt(len(deck))))
-        #n_entry = int(sqrt(len(deck)))
-        n_entry=1
+        n_entry = random.randint(1,len(deck))
+#         n_entry = int(sqrt(len(deck)))
+#         n_entry=1
         active_nodes = [deck.pop(0) for _ in range(n_entry)]
         
 #         print(n_entry,"entry nodes", [e.id for e in active_nodes])
         
+#         print("organising nodes")
         while(deck):
+            if(len(active_nodes)==1 and len(deck)==1):
+                c = deck.pop()
+                p = active_nodes.pop()
+                c.predecessors.append(p)
+                print("terminated with microchain")
+                break
+            
             op = random.randint(0,1)
 #             print([n.id for n in active_nodes],[d.id for d in deck], op)
             if(op==0): #merge
+#                 print("merge")
                 if(len(active_nodes)>=2) and deck:
                     ps=[]
                     for _ in range(self.branch_factor):
@@ -145,6 +154,7 @@ class BranchMergeNetwork(Domain):
 
             elif(op==1): #split
                 if len(deck)>=2:
+#                     print("branch")
                     p1 = active_nodes.pop(0)
                     cs = []
                     for _ in range(self.branch_factor):
@@ -154,6 +164,7 @@ class BranchMergeNetwork(Domain):
                             active_nodes.append(c)
             else: #crain
                 if deck:
+#                     print("chain")
                     p = active_nodes.pop(0)
                     c = deck.pop(0)
                     c.predecessors.append(p)

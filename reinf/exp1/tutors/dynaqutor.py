@@ -29,18 +29,23 @@ class DynaQutor(Qutor):
         RS_pair = self.model[s][a]
         return RS_pair
     
-    def run_episode(self, model, stu, max_steps=-1, update_qvals=True):
-        actions = model.concepts
-
-        S = tuple([False] * len(actions)) #reset the tutor's state .. we assume the student knows nothing
-        self.extend_Q(S, actions)
+    def run_episode(self, model, stu, max_steps=-1, update_qvals=True, reset_student=True):
         
+        actions = model.concepts
         self._new_trace()
+        if reset_student:
+            S = tuple([False] * len(actions)) #reset the tutor's state .. we assume the student knows nothing
+        else:
+            S = self.S
+#         print(S)
+
+        self.extend_Q(S, actions)
+#         print([a.id for a in self.Q[S]]) 
 
         max_steps = float('inf') if max_steps<=0 else max_steps # hack up an infinite number of attempts here
         step_cnt=0
         
-        while (max_steps<=0 or step_cnt<=max_steps) and (False in S):
+        while (max_steps<=0 or step_cnt<max_steps) and (False in S):
             A,explor = self.choose_A(S, actions)
             
 #             if A.id not in self.filterlist:
@@ -82,4 +87,5 @@ class DynaQutor(Qutor):
             step_cnt+=1
             #print(state_as_str(S), step_cnt)
         print("DynaQutor: Episode over in",step_cnt,"steps")
+        self.S = S
         return step_cnt

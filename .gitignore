@@ -12,6 +12,7 @@ tmp/**/*
 *.swp
 *~.nib
 *.pyc
+*.gv
 local.properties
 .classpath
 .settings/

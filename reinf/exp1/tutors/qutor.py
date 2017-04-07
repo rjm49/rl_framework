@@ -21,6 +21,8 @@ class Qutor(BaseTutor):
 #         self.filterlist = {}
 
     def sa_update(self, S,A,R,nx_S, concepts):
+        S = tuple(S)
+        nx_S = tuple(nx_S)
         Q0 = self.Q[S][A]
         A1_best = self.get_best_A_for_S(nx_S, concepts)
         Q1_best = self.Q[nx_S][A1_best]
@@ -63,6 +65,6 @@ class Qutor(BaseTutor):
             
             S = new_S
             step_cnt+=1
-            print(state_as_str(self.thisS), step_cnt)
+            print(state_as_str(self.S), step_cnt)
         print("Qutor: Episode over in",step_cnt,"steps")
         return step_cnt
