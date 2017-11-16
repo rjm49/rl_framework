@@ -31,7 +31,7 @@ def main():
     gammas=[1.0] #discount factors
     lambdas=[0.7]
     #lambdas=[0.0, 0.3, 0.7, 0.99]
-    max_steps=100000
+    max_steps=100
     
     log_dir = "..\\..\\compare_logs\\"
     

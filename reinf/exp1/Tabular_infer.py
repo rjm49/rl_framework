@@ -74,11 +74,11 @@ if __name__ == '__main__':
     batch_names =[]
     
     num_nodes=len(model.concepts)
-#     tutor = RandomTutor(num_nodes=num_nodes)
+    tutor = RandomTutor(num_nodes=num_nodes)
 #     tutor = Qutor(num_nodes, 0.5, 100, 1.0, "Qutor") #0.1 7000
 #     tutor = Qutor(num_nodes, 0.1, 7000, 1.0, "Qutor") #0.1 7000
 #     tutor = SarsaL2(num_nodes, 0.5, 5000, 1.0, "SarsaL2")
-    tutor = DynaQutor(num_nodes, 0.5, 1000, 1.0, "DynaQ")
+#     tutor = DynaQutor(num_nodes, 0.5, 1000, 1.0, "DynaQ")
     
     for _ in range(100):
         tutor.reset()

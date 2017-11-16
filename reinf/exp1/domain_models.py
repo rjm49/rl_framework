@@ -121,8 +121,8 @@ class BranchMergeNetwork(Domain):
                    
         #random.shuffle(deck) # shuffle the concepts into random order
         
-        n_entry = random.randint(1,len(deck))
-#         n_entry = int(sqrt(len(deck)))
+#         n_entry = random.randint(1,len(deck))
+        n_entry = int(sqrt(len(deck)))
 #         n_entry=1
         active_nodes = [deck.pop(0) for _ in range(n_entry)]
         
@@ -137,7 +137,7 @@ class BranchMergeNetwork(Domain):
                 print("terminated with microchain")
                 break
             
-            op = random.randint(0,1)
+            op = random.randint(0,2)
 #             print([n.id for n in active_nodes],[d.id for d in deck], op)
             if(op==0): #merge
 #                 print("merge")

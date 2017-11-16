@@ -80,16 +80,16 @@ class SarsaTutor2(BaseTutor):
         nx_Q = self.Q[nx_S][nx_A]
         delta = R + self.gamma*nx_Q - Q
         learnage = self.learn_rate * delta
-        decay = self.gamma * self.lambda_val
-        z_credit = 1.0
+        z_scaling = 1.0
         seen=set()
         for sa in self.history[:self.history_limit]:
             if tuple(sa) not in seen:
                 s = sa[0]
                 a = sa[1]
-                self.Q[s][a] += learnage*z_credit
+                self.Q[s][a] += learnage*z_scaling
                 seen.add(tuple(sa))
-            z_credit = z_credit * decay
+            z_scaling = z_scaling * (self.gamma * self.lambda_val) # g*l==decay
+
     
     def record_lesson_results(self, lesson, succ, was_known, mastery, was_exploratory):
         S=self.sRep.S
