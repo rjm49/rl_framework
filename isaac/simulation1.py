@@ -7,8 +7,6 @@ from isaac.StudentSim import StudentSim
 from isaac.QutorSim import Qutor
 import random
 
-BASE_DATA_DIR = "c:/git/IsaacData/"
-
 # INGREDIENTS
 # Simulated student
 # RL Tutor
@@ -19,7 +17,7 @@ n_users = 1000
 scores = []
 
 cats, cat_lookup, all_qids, users, diffs, levels, cat_ixs = init_objects(n_users)
-predictor = pickle.load(open(BASE_DATA_DIR + "backfit/dw_cum_pred.pkl", "rb"))
+predictor = pickle.load(open("dw_cum_pred.pkl", "rb"))
 print("loaded data")
 
 all_qids = list(all_qids)
