@@ -1,11 +1,14 @@
 import pickle
 
 import numpy
+import pandas
 
 from backfit.BackfitUtils import init_objects
 from isaac.StudentSim import StudentSim
 from isaac.QutorSim import Qutor
 import random
+
+from matplotlib import pyplot as plt
 
 # INGREDIENTS
 # Simulated student
@@ -31,7 +34,7 @@ qutor = Qutor(alpha=0.667, eps=10, actions=actions)
 print("init'd Qutor")
 
 print("starting loops...")
-for x in range(5000):
+for x in range(500):
     print("student {}".format(x))
     student = StudentSim(predictor)
     K = numpy.zeros(shape=len(cats))  # K33 vector encoding
@@ -77,7 +80,7 @@ for x in range(5000):
             # K[catix] = 0  # no learning rate specified yet!
             # print(K)
             # R = numpy.sqrt(numpy.sum(numpy.square(K))) - numpy.sqrt(numpy.sum(numpy.square(xK)))
-            R = 0  # numpy.sum(K - xK)
+            R = -1  # numpy.sum(K - xK)
             # R = numpy.linalg.norm(K-xK)
             # do qutor update here
             qutor.sa_update(xK, A, R, K)
@@ -93,10 +96,11 @@ for x in range(5000):
     sc, ac = qutor.status_report()
     Ks = "[" + " ".join(map(str,K)) + "]"
     print("final", Ks, "score=", numpy.sum(K))
-    scores.append((x, Ks, move_count, succ_count, explorcnt, reps, sc, ac))
+    scores.append((x, Ks, move_count, succ_count, Rtot, explorcnt, reps, sc, ac))
 
-# input("prompt")
-f = open("qutor.csv", "w")
-for t in scores:
-    f.write(",".join(map(str, t)) + "\n")
-f.close()
+df = pandas.DataFrame.from_records(scores, columns=["trial","endK","moves","successes", "Rtot","explorn","repeats","#states","#actions"])
+df.to_csv("qutor.csv")
+
+print("plotting")
+df.plot(x='trial', y=['successes','Rtot'])
+plt.show()
