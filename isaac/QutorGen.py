@@ -82,7 +82,7 @@ def generate_run_files(alpha, _featureset_to_use, _w, fade, cats, cat_lookup, al
         print("user = ", u)
         X[:]= 0.0
 
-        attempts = pd.read_csv("../by_user/{}.txt".format(u), header=None)
+        attempts = pd.read_csv("../../isaacdata/by_user/{}.txt".format(u), header=None)
 
         runs = extract_runs_w_timestamp(attempts)
         for run in runs:
@@ -184,8 +184,8 @@ if __name__ == '__main__':
 
     #users = open("../mcmc/mcmc_uesrs.txt").read().splitlines()
 
-    passdiffs, stretches, passquals, all_qids = load_new_diffs()
-    mcmcdiffs = load_mcmc_diffs()
+    passdiffs, stretches, passquals, all_qids = load_new_diffs("../../isaacdata/pass_diffs.csv")
+    mcmcdiffs = load_mcmc_diffs("../../isaacdata/mcmc/mcmc_results.csv")
 
     reports =[]
     report_name = "qutorgen_{}_{}_fb{}_opt{}_scale{}_{}.txt".format(0, n_users, str(1 if force_balanced_classes else 0), ("001" if optimise_predictors else "0"), ("1" if do_scaling else "0"), featureset_to_use)
