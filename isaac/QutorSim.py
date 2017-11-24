@@ -9,9 +9,9 @@ class Qutor():
     Tutoring agent with simple tabular state representation and Q-Learning type off-policy control algorithm
     '''
 
-    def __init__(self, alpha=0.5, eps=10, gamma=1.0, actions=None, name="Qutor"):
+    def __init__(self, alpha=0.5, eps=10, gamma=0.95, actions=None, name="Qutor"):
         self.DEBUG = False
-        self.Q = {}  # here live the { S: [actions] } pairs for each tabular S...
+        # self.Q = {}  # here live the { S: [actions] } pairs for each tabular S...
         self.s_lookup = {}
         self.s_index = 0
         self.a_lookup = {}
@@ -30,22 +30,19 @@ class Qutor():
         self.name = name
         self.transition_trace = []  # we keep the back history, of each move, of every episode, right here
         self.update_qvals = True
-        self.s = numpy.zeros(shape=33)
         self.prechosen = set()
 
-    def choose_A(self):
-        if self.Q=={}:
-            explore = True
-        elif self.EPS>0:
+    def choose_A(self, S):
+        if self.EPS>0:
             explore = random.randint(0, self.EPS) == 0
         else:
             explore = False
         if (explore): # starting move OR exploratory move
             a = random.choice(self.actions)
-            if self.DEBUG: print("explore",a)
+            print("explore",a)
         else: #exploitative move
-            a = self.get_best_A_for_S(self.s)
-            if self.DEBUG: print("exploit",a)
+            a = self.get_best_A_for_S(S)
+            print("exploit",a)
         return a, explore
 
 
@@ -56,7 +53,11 @@ class Qutor():
             # self.Qnp[self.s_index, :] = 0.0
             self.s_lookup[_s] = self.s_index
             if self.Qnp.shape[0]<= self.s_index:
-                self.Qnp = numpy.vstack((self.Qnp, numpy.zeros(shape=(1000,self.Qnp.shape[1]))))
+                #nouveau = numpy.random.rand(1000,self.Qnp.shape[1])
+                nouveau = numpy.zeros((1000,self.Qnp.shape[1]))
+                # nouveau = nouveau + 10.0
+                print("stacked")
+                self.Qnp = numpy.vstack((self.Qnp, nouveau))
             self.s_index += 1
 
         # if _s not in self.Q:
@@ -79,19 +80,23 @@ class Qutor():
 
     def setQ(self, s,a, q):
         _s = tuple(s)
+        score = numpy.sqrt(s.dot(_s))
         sx = self.s_lookup[_s]
         ax = self.a_lookup[a]
         # if _s not in self.Q:
         #     self.Q[_s]={}
         # if a not in self.Q[_s]:
         #     self.Q[_s][a] = q
-        print(" -- - setting {},{} \t\t\t\t {}".format(sx,a,q))
+        was = self.Qnp[sx,ax]
+        print(" -- - setting {}(sc{}),{} \t\t\t\t from {} : {}".format(sx,score,a,was,q))
         self.Qnp[sx,ax]=q
 
     def get_best_A_for_S(self, S):
         self.initQS(S)
         sx = self.s_lookup[tuple(S)]
         forS = self.Qnp[sx,:]
+        # print(" ".join(map(str,S)),"="," ".join(map(str,forS)))
+        # input("prmp")
         maxAxs = numpy.argwhere(forS == numpy.max(forS))
         # print(maxAxs)
         mAx = numpy.random.choice(maxAxs.flatten())
@@ -122,9 +127,16 @@ class Qutor():
 
     def sa_update(self, S,A,R,nx_S):
         Q0 = self.getQ(S,A)
+        #print("old Q0=",Q0, "R is ",R)
         A1_best = self.get_best_A_for_S(nx_S)
         Q1_best = self.getQ(nx_S, A1_best)
-        Q0 = (1-self.learn_rate)*Q0 + self.learn_rate*(R + self.gamma*Q1_best)
+
+        #print("!!",self.learn_rate, self.gamma, A1_best, Q1_best)
+        #Q0 = (1-self.learn_rate)*Q0 + self.learn_rate*(R + self.gamma*Q1_best)
+        Qdelta = self.learn_rate*(R + self.gamma*Q1_best - Q0)
+        #print("Qdelta=",Qdelta)
+        Q0 = Q0 + Qdelta
+        #print("new Q0=",Q0)
         self.setQ(S,A, Q0)
 
     # def sa_update(self, S, A, R, nx_S):

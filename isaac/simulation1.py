@@ -27,8 +27,8 @@ all_qids = list(all_qids)
 random.shuffle(all_qids)
 
 
-actions = tuple(all_qids[0:100])
-qutor = Qutor(alpha=0.667, eps=10, actions=actions)
+actions = tuple(all_qids)
+qutor = Qutor(alpha=0.05, gamma=0.99, eps=100, actions=actions)
 
 # qutor.s = K
 print("init'd Qutor")
@@ -45,8 +45,8 @@ for x in range(500):
     fail_count = 0
     explorcnt = 0
     reps = 0
-    for _ in range(100):  # what score can we get in 100 moves?
-        A, explorative = qutor.choose_A()
+    while True:  # what score can we get in 100 moves?
+        A, explorative = qutor.choose_A(K)
         if explorative:
             explorcnt += 1
         # print(A, explorative)
@@ -55,7 +55,7 @@ for x in range(500):
         cat = cat_lookup[A]
         catix = cat_ixs[cat]
         # print(catix)
-        diff = diffs[A]
+        # diff = diffs[A]
         qenc[catix] = 1  # binary diff at this time
 
         # print("can",K,"pass",qenc,"?")
@@ -65,32 +65,29 @@ for x in range(500):
             # print("pass")
             xK = numpy.copy(K)
             K[catix] = K[catix] + 1  # no learning rate specified yet!
-            # print(K)
-            # R = numpy.sqrt(numpy.sum(numpy.square(K))) - numpy.sqrt(numpy.sum(numpy.square(xK)))
-            R = 1  # numpy.sum(K - xK)
-            # R = numpy.linalg.norm(K - xK)
-            # do qutor update here
+            #R = numpy.sum(numpy.square(K)) - numpy.sum(numpy.square(xK))
+            #R = 1.0
+            #R = numpy.sqrt(K.dot(K)) - numpy.sqrt(xK.dot(xK))
+            R=-1.0
             qutor.sa_update(xK, A, R, K)
-            # print("success")
-            # print("reward",R)
             succ_count += 1
         else:
             # print("F A I L")
             xK = numpy.copy(K)
             # K[catix] = 0  # no learning rate specified yet!
             # print(K)
-            # R = numpy.sqrt(numpy.sum(numpy.square(K))) - numpy.sqrt(numpy.sum(numpy.square(xK)))
-            R = -1  # numpy.sum(K - xK)
+            R = -1.0
             # R = numpy.linalg.norm(K-xK)
-            # do qutor update here
             qutor.sa_update(xK, A, R, K)
-            # print("failure")
-            # print("reward",R)
             fail_count += 1
         Rtot += R
+        move_count += 1
+        print("SCORE:", numpy.sum(K))
+        if numpy.sum(K)>100.0:
+            break
     # print("end K", K)
     # print("student #{}, for {} moves, succ moves {} v fails {}, total score {}".format(x, move_count, succ_count,
-    #                                                                                    fail_count, Rtot))
+    #                                                                       fail_count, Rtot))
     # print("exc", explorcnt)
     # print("repetitions", reps)
     sc, ac = qutor.status_report()
@@ -102,5 +99,5 @@ df = pandas.DataFrame.from_records(scores, columns=["trial","endK","moves","succ
 df.to_csv("qutor.csv")
 
 print("plotting")
-df.plot(x='trial', y=['successes','Rtot'])
+df.plot(x='trial', y=['Rtot'])
 plt.show()

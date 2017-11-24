@@ -24,7 +24,10 @@ class StudentSim():
         else:
             self.haveseen.add(A)
             prob = self.passprob(qenc)
-            return True if prob>=0.5 else False
+            if prob>=0.5:
+                return True
+            else:
+                return False
             #att = numpy.random.random()
             # print("ppass {}, attempt {}".format(prob, att))
             #return att < prob
@@ -36,4 +39,4 @@ class StudentSim():
         #specifically in the K33 model, we update the category with the new score
         assert len(numpy.nonzero(qenc))==1 # only one value shd be non zero
         catix = numpy.nonzero(qenc)[0]
-        self.s[catix] = qenc[catix] # no learning rate specified yet!
+        self.s[catix] = self.s[catix] + qenc[catix] # no learning rate specified yet!
