@@ -25,16 +25,16 @@ print("loaded data")
 
 all_qids = list(all_qids)
 random.shuffle(all_qids)
-
+all_qids = all_qids[0:20]
 
 actions = tuple(all_qids)
-qutor = Qutor(alpha=0.05, gamma=0.99, eps=100, actions=actions)
+qutor = Qutor(alpha=0.1, gamma=1.0, eps=100, actions=actions)
 
 # qutor.s = K
 print("init'd Qutor")
 
 print("starting loops...")
-for x in range(500):
+for x in range(128000):
     print("student {}".format(x))
     student = StudentSim(predictor)
     K = numpy.zeros(shape=len(cats))  # K33 vector encoding
@@ -45,7 +45,7 @@ for x in range(500):
     fail_count = 0
     explorcnt = 0
     reps = 0
-    while True:  # what score can we get in 100 moves?
+    for _ in range(20):  # what score can we get in 100 moves?
         A, explorative = qutor.choose_A(K)
         if explorative:
             explorcnt += 1
@@ -68,7 +68,7 @@ for x in range(500):
             #R = numpy.sum(numpy.square(K)) - numpy.sum(numpy.square(xK))
             #R = 1.0
             #R = numpy.sqrt(K.dot(K)) - numpy.sqrt(xK.dot(xK))
-            R=-1.0
+            R= 1.0
             qutor.sa_update(xK, A, R, K)
             succ_count += 1
         else:
@@ -82,9 +82,6 @@ for x in range(500):
             fail_count += 1
         Rtot += R
         move_count += 1
-        print("SCORE:", numpy.sum(K))
-        if numpy.sum(K)>100.0:
-            break
     # print("end K", K)
     # print("student #{}, for {} moves, succ moves {} v fails {}, total score {}".format(x, move_count, succ_count,
     #                                                                       fail_count, Rtot))
@@ -93,11 +90,11 @@ for x in range(500):
     sc, ac = qutor.status_report()
     Ks = "[" + " ".join(map(str,K)) + "]"
     print("final", Ks, "score=", numpy.sum(K))
-    scores.append((x, Ks, move_count, succ_count, Rtot, explorcnt, reps, sc, ac))
+    scores.append((x, Ks, move_count, numpy.sum(K), Rtot, explorcnt, reps, sc, ac))
 
 df = pandas.DataFrame.from_records(scores, columns=["trial","endK","moves","successes", "Rtot","explorn","repeats","#states","#actions"])
 df.to_csv("qutor.csv")
 
 print("plotting")
-df.plot(x='trial', y=['Rtot'])
+df[0::500].plot(x='trial', y=['successes'])
 plt.show()

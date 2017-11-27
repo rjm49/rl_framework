@@ -13,6 +13,10 @@ tmp/**/*
 *~.nib
 *.pyc
 *.gv
+*.log
+*.pkl
+*.csv
+*.txt
 local.properties
 .classpath
 .settings/

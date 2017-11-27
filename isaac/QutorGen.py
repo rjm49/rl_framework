@@ -24,31 +24,33 @@ from utils.utils import extract_runs_w_timestamp
 QENC_QUAL=False
 QENC_DIFF=False
 qenc_width = 33
-n_classes = 3
+n_classes = 2
 
 FEAT_F33 = "F33"
 
 n_users = 1000
 max_runs = None #10000
-percTest = 0.20
+percTest = 0.10
 
 predictors = [
     # DummyClassifier(strategy="stratified"),
     # DummyClassifier(strategy="uniform"),
     # BernoulliNB(),
-    LinearSVC(max_iter=100, class_weight="balanced"),
+    #SVC(max_iter=1000, class_weight="balanced"),
+    LinearSVC(max_iter=1000, class_weight="balanced"),
     MLPClassifier(max_iter=100, nesterovs_momentum=True, early_stopping=True), #, activation="logistic"),
-    LogisticRegression(class_weight='balanced'),
+    # LogisticRegression(class_weight='balanced'),
     # GaussianNB(),
 ]
 
 predictor_params = [
     # None,
     # None,
-    # {'n_iter':50, 'alpha': numpy.logspace(-3, 2) },
+    #{'n_iter':50, 'alpha': numpy.logspace(-3, 2) },
+    #{'n_iter':50,'C': numpy.logspace(-3, 2), 'gamma': numpy.logspace(-3, 2)},
     {'n_iter':50,'C': numpy.logspace(-3, 2)},
-    {'n_iter':125,'hidden_layer_sizes':[(100,), (66,10)], 'learning_rate_init':[0.001, 0.01, 0.1], 'alpha': numpy.logspace(-6,2) },
-    {'n_iter':50,'C': numpy.logspace(-3, 2)},
+    {'n_iter':50,'hidden_layer_sizes':[(442,),], 'learning_rate_init':[0.001, 0.01, 0.1], 'alpha': numpy.logspace(-6,2) },
+    # {'n_iter':50,'C': numpy.logspace(-3, 2)},
     # None,
 ]
 
@@ -61,7 +63,8 @@ def generate_run_files(alpha, _featureset_to_use, _w, fade, cats, cat_lookup, al
     X_file = open(stem+"_X.csv","w")
     y_file = open(stem+"_y.csv","w")
 
-    n_features = len(cats)
+    n_components = len(cats)
+    n_features = 14
     #     all_X = numpy.zeros(shape=(0,n_features))
 
     print("using n_features=", n_features)
@@ -76,7 +79,7 @@ def generate_run_files(alpha, _featureset_to_use, _w, fade, cats, cat_lookup, al
     # print("loaded transition data")
 
     run_ct= 0
-    X = numpy.zeros(shape=n_features) #init'se a new feature vector w same width as all_X
+    X = numpy.zeros(shape=(n_components, n_features) ) #init'se a new feature vector w same width as all_X
     print("Generating files for {} users...".format(len(users)))
     for u in users:
         print("user = ", u)
@@ -101,56 +104,60 @@ def generate_run_files(alpha, _featureset_to_use, _w, fade, cats, cat_lookup, al
             qpassqual = passquals[qt]
             stretch = stretches[qt]
             mcmc = mcmcdiffs[qt] if qt in mcmcdiffs else 0
-            # mcmc = 0
-            # if(n_pass > 0):
-            #     tailix = qindex.index(qt)
-            #     headix = qindex.index(qt)
-            #     mcmc = tmx[headix, tailix]
-            #     print ("mcmc = ",mcmc)
-            #print(qindex)
 
-            qenc = numpy.zeros(shape=qenc_width)
-            # qenc[:] = 0.0 #reset question encoding
-            q_weight = 1.0
-            if _w == DW_NATTS or _w == DW_STRETCH:
-                q_weight = stretch
-            elif _w == DW_PASSRATE:
-                q_weight = passrate
-            elif _w == DW_LEVEL:
-                q_weight = 1+lev
-            elif _w == DW_MCMC:
-                q_weight = mcmc
-            qenc[catix] = q_weight  # set the next q category and diff
+            qenc = numpy.zeros(shape=(qenc_width, n_features))
 
-            X_file.write(",".join([str(x) for x in X])+","+",".join([str(e) for e in qenc])+"\n")
-            X = X * fade
+            PRATE_IX=0
+            STRETCH_IX=1
+            NATTS_IX=2
+            LEVEL_IX=3
+            MCMC_IX=4
+            QUAL_IX=5
+            SUXX_IX=6
+            Q_CNT_IX=7
+            RECENCY_IX=8
+            FAIL_IX=9
 
-            a_weight = 1.0
-            if _w == DW_BINARY:
-                a_weight = 1.0
-            elif _w == DW_NATTS:
-                a_weight = n_atts
-            elif _w == DW_NO_WEIGHT:
-                a_weight = 1.0 / n_atts
-            elif _w == DW_PASSRATE:
-                a_weight = passrate / n_atts
-            elif _w == DW_STRETCH:
-                a_weight = stretch / n_atts
-            elif _w == DW_MCMC:
-                a_weight = mcmc / n_atts
-            elif _w == DW_LEVEL:
-                a_weight = (1+lev) / n_atts
+            F_PRATE_IX=10
+            F_STRETCH_IX=11
+            F_NATTS_IX=12
+            F_QUAL_IX=13
+
+
+            qenc[catix, PRATE_IX] = passrate
+            qenc[catix, STRETCH_IX] = stretch
+            qenc[catix, NATTS_IX] = n_atts
+            qenc[catix, LEVEL_IX] = lev
+            # qenc[catix, MCMC_IX] = mcmc
+            qenc[catix, QUAL_IX] = qpassqual
+
+            X_file.write(",".join([str(x) for x in X.flatten()])+","+",".join([str(e) for e in qenc.flatten()])+"\n")
+
+            X[catix, RECENCY_IX] = X[catix, RECENCY_IX] * fade
+            X[catix, Q_CNT_IX] += 1.0
+
+
+#            X[catix, LEVEL_IX] += alpha*lev
+#            X[catix, MCMC_IX] += alpha*mcmc
 
             if (n_pass>0):
-                if n_classes==2:
-                    y = 0
-                else:
-                    y = (-1 if n_atts==1 else 0)
-                X[catix] = (1.0-alpha)*X[catix] + alpha*a_weight
+                y = -1 if (n_classes==3 and n_atts==1) else 0
+                X[catix, PRATE_IX] = X[catix, PRATE_IX]*(1-alpha) + alpha*passrate
+                X[catix, QUAL_IX] = X[catix, QUAL_IX]*(1-alpha) + alpha*qpassqual
+                X[catix, STRETCH_IX] = X[catix, STRETCH_IX]*(1-alpha) + alpha*stretch
+                X[catix, NATTS_IX] = X[catix, NATTS_IX]*(1-alpha) + alpha*n_atts
+
+                X[catix, SUXX_IX] += 1.0
+                X[catix, RECENCY_IX] = 1.0
             else:
                 y = 1
-                #X[catix] = 0
-                #X[catix] = retain*X[catix] -(1-retain)*upd
+                X[catix, F_PRATE_IX] = X[catix, F_PRATE_IX]*(1-alpha) + alpha*passrate
+                X[catix, F_QUAL_IX] = X[catix, F_QUAL_IX]*(1-alpha) + alpha*qpassqual
+                X[catix, F_STRETCH_IX] = X[catix, F_STRETCH_IX]*(1-alpha) + alpha*stretch
+                X[catix, F_NATTS_IX] = X[catix, F_NATTS_IX]*(1-alpha) + alpha*n_atts
+
+                X[catix, FAIL_IX] += 1.0
+                X[catix, RECENCY_IX] = -1.0
 
             y_file.write(str(y)+"\n")
 
@@ -192,8 +199,8 @@ if __name__ == '__main__':
     if do_test:
         report = open(report_name,"w")
     for w in [DW_BINARY]: #DW_NO_WEIGHT, DW_NATTS, DW_LEVEL, DW_PASSRATE, DW_MCMC, DW_STRETCH]:
-        for alpha in [1.0]:
-            for phi_retain in [1.0]:
+        for alpha in [0.25, 0.5, 0.75, 1.0]:
+            for phi_retain in [1.0, 0.75, 0.5, 0.25, 0.0]:
                 print(cat_ixs)
                 if do_test:
                     print("testing")
@@ -209,13 +216,13 @@ if __name__ == '__main__':
         print("complete, report file is:", report_name)
 
 
-    # wid = n_classes+1
-    # if do_test:
-    #     retains = []
-    #     f1s = []
-    #     mx = numpy.ndarray(shape=(len(reports), wid))
-    #     for ix, (alpha, r, ytr, ypd) in enumerate(reports):
-    #         mx[ix, 0] = alpha
-    #         f1s = f1_score(ytr, ypd, average=None)
-    #         mx[ix, 1:wid] = f1s
-    #     numpy.savetxt(report_name+"_to_plot.csv", mx)
+        # wid = n_classes+1
+        # if do_test:
+        #     retains = []
+        #     f1s = []
+        #     mx = numpy.ndarray(shape=(len(reports), wid))
+        #     for ix, (alpha, r, ytr, ypd) in enumerate(reports):
+        #         mx[ix, 0] = alpha
+        #         f1s = f1_score(ytr, ypd, average=None)
+        #         mx[ix, 1:wid] = f1s
+        #     numpy.savetxt(report_name+"_to_plot.csv", mx)
