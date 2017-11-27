@@ -2,28 +2,30 @@ import numpy
 class StudentSim():
     def __init__(self, predictor):
         self.p = predictor
-        self.s = None
+        #self.s = None
         self.haveseen = set()
         #self.s = numpy.zeros(shape=swidth)
 
     def encodeinput(self, state, qenc):
         return state + qenc
 
-    def passprob(self, qenc):
+    def passprob(self, uK, qenc):
         # take an encoded question and return a pass probability
-        inp = numpy.append(self.s, qenc).reshape(1,-1)
+        inp = numpy.append(uK.flatten(), qenc.flatten())#.reshape(1,-1)
+        print(inp.shape)
+        input("inp")
         probs = self.p.predict_proba(inp)
         #print(probs)
         return (probs[0][0])
 
-    def doipass(self, A, qenc):
+    def doipass(self, A, uK, qenc):
         # take an encoded question and return true or false, stochastically
         if A in self.haveseen:
             #print("have seen!",A)
             return False
         else:
             self.haveseen.add(A)
-            prob = self.passprob(qenc)
+            prob = self.passprob(uK, qenc)
             # if prob>=0.5:
             #     return True
             # else:

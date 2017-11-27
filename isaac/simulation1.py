@@ -4,6 +4,9 @@ import numpy
 import pandas
 
 from backfit.BackfitUtils import init_objects
+from backfit.utils.utils import load_new_diffs, load_mcmc_diffs
+from isaac import itemencoding
+from isaac.QutorGen import gen_X_primed, gen_qenc
 from isaac.StudentSim import StudentSim
 from isaac.QutorSim import Qutor
 import random
@@ -20,7 +23,9 @@ n_users = 1000
 scores = []
 
 cats, cat_lookup, all_qids, users, diffs, levels, cat_ixs = init_objects(n_users)
-predictor = pickle.load(open("dw_cum_pred.pkl", "rb"))
+passrates, stretches, passquals, all_qids = load_new_diffs("../../isaacdata/pass_diffs.csv")
+mcmcdiffs = load_mcmc_diffs("../../isaacdata/mcmc/mcmc_results.csv")
+predictor = pickle.load(open("qutor_test.pkl", "rb"))
 print("loaded data")
 
 all_qids = list(all_qids)
@@ -34,10 +39,10 @@ qutor = Qutor(alpha=0.1, gamma=1.0, eps=100, actions=actions)
 print("init'd Qutor")
 
 print("starting loops...")
-for x in range(128000):
+for x in range(128):
     print("student {}".format(x))
     student = StudentSim(predictor)
-    K = numpy.zeros(shape=len(cats))  # K33 vector encoding
+    K = numpy.zeros(shape=(itemencoding.n_components, itemencoding.k_features))  # K33 vector encoding
     student.s = K
     Rtot = 0
     move_count = 0
@@ -45,26 +50,32 @@ for x in range(128000):
     fail_count = 0
     explorcnt = 0
     reps = 0
+
+    alpha=1.0
+    phi= 1.0
+
     for _ in range(20):  # what score can we get in 100 moves?
+
         A, explorative = qutor.choose_A(K)
         if explorative:
             explorcnt += 1
         # print(A, explorative)
         move_count += 1
-        qenc = numpy.zeros(shape=len(cats))
-        cat = cat_lookup[A]
-        catix = cat_ixs[cat]
-        # print(catix)
-        # diff = diffs[A]
-        qenc[catix] = 1  # binary diff at this time
+
+        catix = cat_ixs[cat_lookup[A]]
+
+        qenc = gen_qenc(catix, passrates[A], stretches[A], levels[A], passquals[A])
+        print(K.flatten().shape)
+        print(qenc.flatten().shape)
 
         # print("can",K,"pass",qenc,"?")
         if A in student.haveseen:
             reps += 1
-        if student.doipass(A, qenc) == True:
+        if student.doipass(A, K, qenc) == True:
             # print("pass")
             xK = numpy.copy(K)
-            K[catix] = K[catix] + 1  # no learning rate specified yet!
+            #K[catix] = K[catix] + 1  # no learning rate specified yet!
+            K = gen_X_primed(K, catix, alpha, phi, True, passrates[A], passquals[A], stretches[A])
             #R = numpy.sum(numpy.square(K)) - numpy.sum(numpy.square(xK))
             #R = 1.0
             #R = numpy.sqrt(K.dot(K)) - numpy.sqrt(xK.dot(xK))
@@ -74,6 +85,7 @@ for x in range(128000):
         else:
             # print("F A I L")
             xK = numpy.copy(K)
+            K = gen_X_primed(K, catix, alpha, phi, False, passrates[A], passquals[A], stretches[A])
             # K[catix] = 0  # no learning rate specified yet!
             # print(K)
             R = -1.0

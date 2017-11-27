@@ -33,6 +33,7 @@ class Qutor():
         self.prechosen = set()
 
     def choose_A(self, S):
+        S=tuple(S.flatten())
         if self.EPS>0:
             explore = random.randint(0, self.EPS) == 0
         else:
@@ -126,6 +127,8 @@ class Qutor():
     #     return maxA
 
     def sa_update(self, S,A,R,nx_S):
+        S = tuple(S.flatten())
+        nx_S = tuple(nx_S.flatten())
         Q0 = self.getQ(S,A)
         #print("old Q0=",Q0, "R is ",R)
         A1_best = self.get_best_A_for_S(nx_S)
