@@ -1,7 +1,8 @@
 import numpy
 class StudentSim():
-    def __init__(self, predictor):
+    def __init__(self, predictor, scaler):
         self.p = predictor
+        self.scaler = scaler
         #self.s = None
         self.haveseen = set()
         #self.s = numpy.zeros(shape=swidth)
@@ -11,11 +12,10 @@ class StudentSim():
 
     def passprob(self, uK, qenc):
         # take an encoded question and return a pass probability
-        inp = numpy.append(uK.flatten(), qenc.flatten())#.reshape(1,-1)
-        print(inp.shape)
-        input("inp")
-        probs = self.p.predict_proba(inp)
-        #print(probs)
+        inp = numpy.append(uK.flatten(), qenc.flatten()).reshape(1,-1)
+        sinp = self.scaler.transform(inp)
+        probs = self.p.predict_proba(sinp)
+        # print(probs)
         return (probs[0][0])
 
     def doipass(self, A, uK, qenc):

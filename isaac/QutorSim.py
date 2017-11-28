@@ -32,8 +32,7 @@ class Qutor():
         self.update_qvals = True
         self.prechosen = set()
 
-    def choose_A(self, S):
-        S=tuple(S.flatten())
+    def choose_A(self, _S):
         if self.EPS>0:
             explore = random.randint(0, self.EPS) == 0
         else:
@@ -42,17 +41,16 @@ class Qutor():
             a = random.choice(self.actions)
             print("explore",a)
         else: #exploitative move
-            a = self.get_best_A_for_S(S)
+            a = self.get_best_A_for_S(_S)
             print("exploit",a)
         return a, explore
 
 
     def initQS(self, s):
-        _s = tuple(s)
-        if _s not in self.s_lookup:
+        if s not in self.s_lookup:
             #acquire an index for s
             # self.Qnp[self.s_index, :] = 0.0
-            self.s_lookup[_s] = self.s_index
+            self.s_lookup[s] = self.s_index
             if self.Qnp.shape[0]<= self.s_index:
                 #nouveau = numpy.random.rand(1000,self.Qnp.shape[1])
                 nouveau = numpy.zeros((1000,self.Qnp.shape[1]))
@@ -72,17 +70,15 @@ class Qutor():
 
     def getQ(self, s,a):
         self.initQS(s)
-        _s = tuple(s)
-        sx = self.s_lookup[_s]
+        sx = self.s_lookup[s]
         ax = self.a_lookup[a]
         # if a not in self.Q[_s]:
         #     self.Q[_s][a] = 0
         return self.Qnp[sx, ax]
 
     def setQ(self, s,a, q):
-        _s = tuple(s)
-        score = numpy.sqrt(s.dot(_s))
-        sx = self.s_lookup[_s]
+        score = numpy.sqrt(numpy.dot(s,s))
+        sx = self.s_lookup[s]
         ax = self.a_lookup[a]
         # if _s not in self.Q:
         #     self.Q[_s]={}
@@ -126,10 +122,8 @@ class Qutor():
     #     #input("promp")
     #     return maxA
 
-    def sa_update(self, S,A,R,nx_S):
-        S = tuple(S.flatten())
-        nx_S = tuple(nx_S.flatten())
-        Q0 = self.getQ(S,A)
+    def sa_update(self, _S,A,R,nx_S):
+        Q0 = self.getQ(_S,A)
         #print("old Q0=",Q0, "R is ",R)
         A1_best = self.get_best_A_for_S(nx_S)
         Q1_best = self.getQ(nx_S, A1_best)
@@ -140,7 +134,7 @@ class Qutor():
         #print("Qdelta=",Qdelta)
         Q0 = Q0 + Qdelta
         #print("new Q0=",Q0)
-        self.setQ(S,A, Q0)
+        self.setQ(_S,A, Q0)
 
     # def sa_update(self, S, A, R, nx_S):
     #     Q0 = self.getQ(S,A)

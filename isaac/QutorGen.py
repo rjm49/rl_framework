@@ -112,7 +112,6 @@ def generate_run_files(alpha, _featureset_to_use, _w, phi, cats, cat_lookup, all
 
             X_file.write(",".join([str(j) for j in jnd]) +"\n")
 
-
             X = gen_X_primed(X, catix, alpha, phi, (n_pass > 0), passrate, qpassqual, stretch) #, n_atts)
             if (n_pass > 0):
                 y = -1 if (n_classes == 3 and n_atts == 1) else 0
@@ -159,8 +158,8 @@ if __name__ == '__main__':
     if do_test:
         report = open(report_name,"w")
     for w in [DW_BINARY]: #DW_NO_WEIGHT, DW_NATTS, DW_LEVEL, DW_PASSRATE, DW_MCMC, DW_STRETCH]:
-        for alpha in [0.25, 0.5, 0.75, 1.0]:
-            for phi_retain in [1.0, 0.75, 0.5, 0.25, 0.0]:
+        for alpha in [1.0]: # [0.25, 0.5, 0.75, 1.0]:
+            for phi_retain in [0.5]: # [1.0, 0.75, 0.5, 0.25, 0.0]:
                 print(cat_ixs)
                 if do_test:
                     print("testing")

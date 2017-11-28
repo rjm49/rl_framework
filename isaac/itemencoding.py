@@ -42,7 +42,7 @@ def gen_X_primed(X, catix, alpha, fade, is_pass, passrate, qpassqual, stretch): 
     FAIL_IX = 9
 
     Xc = X[catix]
-    Xc[RECENCY_IX]  =   Xc[RECENCY_IX] * fade
+    X[:,RECENCY_IX]  =   X[:,RECENCY_IX] * fade
     Xc[Q_CNT_IX]    +=  1.0
     #            X[catix, LEVEL_IX] += alpha*lev
     #            X[catix, MCMC_IX] += alpha*mcmc
