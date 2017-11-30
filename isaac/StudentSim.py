@@ -26,13 +26,13 @@ class StudentSim():
         else:
             self.haveseen.add(A)
             prob = self.passprob(uK, qenc)
-            # if prob>=0.5:
-            #     return True
-            # else:
-            #     return False
-            att = numpy.random.normal()
+            if prob>=0.5:
+                return True
+            else:
+                return False
+            #att = numpy.random.normal()
             # print("ppass {}, attempt {}".format(prob, att))
-            return att < prob
+            #return att < prob
 
     def updatemystate(self, qenc, passed=False):
         #do the state update thing here

@@ -146,7 +146,7 @@ if __name__ == '__main__':
     optimise_predictors = True
     n_classes = 2
     print("n_users",n_users)
-    cats, cat_lookup, all_qids, users, _stretches_, levels, cat_ixs = init_objects(n_users, seed=666)
+    cats, cat_lookup, all_qids, users, _stretches_, levels, cat_ixs = init_objects(n_users, path="../../isaacdata/", seed=666)
 
     #users = open("../mcmc/mcmc_uesrs.txt").read().splitlines()
 
@@ -158,8 +158,8 @@ if __name__ == '__main__':
     if do_test:
         report = open(report_name,"w")
     for w in [DW_BINARY]: #DW_NO_WEIGHT, DW_NATTS, DW_LEVEL, DW_PASSRATE, DW_MCMC, DW_STRETCH]:
-        for alpha in [1.0]: # [0.25, 0.5, 0.75, 1.0]:
-            for phi_retain in [0.5]: # [1.0, 0.75, 0.5, 0.25, 0.0]:
+        for alpha in [0.25, 0.5, 0.75, 1.0]:
+            for phi_retain in [1.0, 0.75, 0.5, 0.25, 0.0]:
                 print(cat_ixs)
                 if do_test:
                     print("testing")

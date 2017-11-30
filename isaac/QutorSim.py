@@ -9,7 +9,7 @@ class Qutor():
     Tutoring agent with simple tabular state representation and Q-Learning type off-policy control algorithm
     '''
 
-    def __init__(self, alpha=0.5, eps=10, gamma=0.95, actions=None, name="Qutor"):
+    def __init__(self, alpha=0.5, gamma=0.95, eps=10, actions=None, name="Qutor"):
         self.DEBUG = False
         # self.Q = {}  # here live the { S: [actions] } pairs for each tabular S...
         self.s_lookup = {}

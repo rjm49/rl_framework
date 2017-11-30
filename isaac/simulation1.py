@@ -33,15 +33,15 @@ print("loaded data")
 all_qids = list(all_qids)
 random.shuffle(all_qids)
 
-actions = tuple(all_qids)
+actions = tuple(all_qids[0:10])
 # qutor = Qutor(alpha=0.1, gamma=1.0, eps=1000, actions=actions)
-qutor = QutorFA(0.1, 1.0, 1000, actions, "QutorFA", cat_lookup, cat_ixs, passrates, stretches, levels, passquals)
+qutor = QutorFA(0.2, 1.0, 10, actions, "QutorFA", cat_lookup, cat_ixs, passrates, stretches, levels, passquals)
 
 # qutor.s = K
 print("init'd Qutor")
 
 print("starting loops...")
-for x in range(50000):
+for x in range(100):
     print("student {}".format(x))
     student = StudentSim(predictor, scaler)
     K = numpy.zeros(shape=(itemencoding.n_components, itemencoding.k_features))  # K33 vector encoding
@@ -53,11 +53,11 @@ for x in range(50000):
     explorcnt = 0
     reps = 0
 
-    alpha=1.0
-    phi= 0.5
+    alpha= 1.0
+    phi= 0.75
     passed = False
 
-    for _ in range(100):  # what score can we get in 100 moves?
+    for _ in range(20):  # what score can we get in 100 moves?
         A, explorative = qutor.choose_A(K)
         if explorative:
             explorcnt += 1
@@ -71,10 +71,12 @@ for x in range(50000):
             reps += 1
 
         if student.doipass(A, K, qenc) == True:
+            print("S U C C E S S")
             R= 1.0
             succ_count += 1
             passed = True
         else:
+            print("---f-a-i-l---")
             R = -1.0
             fail_count += 1
             passed = False
