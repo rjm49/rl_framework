@@ -72,13 +72,14 @@ predictor_params = [
 ]
 
 def generate_run_files(alpha, _featureset_to_use, _w, phi, cats, cat_lookup, all_qids, users, stretches, passrates, passquals, levels, mcmcdf, cat_ixs, profiles=None):
+    base = "../../../isaac_data_files/"
     stem = _featureset_to_use+"_"+str(alpha) + "_" + str(phi) + "_" + _w
-    x_filename= stem+"_X.csv"
-    y_filename= stem+"_y.csv"
-    uq_filename= stem+"_uq.csv"
+    x_filename= base + stem+"_X.csv"
+    y_filename= base + stem+"_y.csv"
+    uq_filename= base + stem+"_uq.csv"
 
-    X_file = open(stem+"_X.csv","w")
-    y_file = open(stem+"_y.csv","w")
+    X_file = open(x_filename,"w")
+    y_file = open(y_filename,"w")
     uq_file = open(uq_filename, "w")
 
     n_components = len(cats)
@@ -232,7 +233,7 @@ def generate_run_files(alpha, _featureset_to_use, _w, phi, cats, cat_lookup, all
 
     user_summary_df.dropna(inplace=True)
     user_summary_df = user_summary_df.infer_objects()
-    user_summary_df.to_csv("user_summary_df.csv")
+    user_summary_df.to_csv("../../../isaac_data_files/user_summary_df.csv")
     #deltadf = user_summary_df["rox_delta"]
     # print(type(deltadf))
     # print(deltadf.head())
@@ -258,7 +259,7 @@ if __name__ == '__main__':
 
     if cmd.startswith('p'):
         #do plots
-        user_summary_df = pd.DataFrame.from_csv("user_summary_df.csv", header=0, index_col=0)
+        user_summary_df = pd.DataFrame.from_csv("../../../isaac_data_files/user_summary_df.csv", header=0, index_col=0)
         print(user_summary_df.shape)
         print(user_summary_df.dtypes)
         print(user_summary_df.dtypes)
@@ -295,8 +296,8 @@ if __name__ == '__main__':
     # stretches = adf.loc[:,"med_n_pass"] / adf.loc[:,"med_n_atts"]
 
     reports =[]
-    report_name = "qutorgen_{}_{}_fb{}_opt{}_scale{}_{}.csv".format(0, n_users, str(1 if force_balanced_classes else 0), ("001" if optimise_predictors else "0"), ("1" if do_scaling else "0"), featureset_to_use)
-    conf_report = "confusion.txt"
+    report_name = "../../../isaac_data_files/qutorgen_{}_{}_fb{}_opt{}_scale{}_{}.csv".format(0, n_users, str(1 if force_balanced_classes else 0), ("001" if optimise_predictors else "0"), ("1" if do_scaling else "0"), featureset_to_use)
+    conf_report = "../../../isaac_data_files/confusion.txt"
     if do_test:
         report = open(report_name,"w")
         conf_report = open(conf_report,"w")
@@ -306,8 +307,8 @@ if __name__ == '__main__':
                 print(cat_ixs)
                 if do_test:
                     print("testing")
-                    xfn = "F33_{}_{}_{}_X.csv".format(str(alpha), str(phi_retain), w)
-                    yfn = "F33_{}_{}_{}_y.csv".format(str(alpha), str(phi_retain), w)
+                    xfn = "../../../isaac_data_files/F33_{}_{}_{}_X.csv".format(str(alpha), str(phi_retain), w)
+                    yfn = "../../../isaac_data_files/F33_{}_{}_{}_y.csv".format(str(alpha), str(phi_retain), w)
                     X_train, X_test, y_pred_tr, y_pred, y_true, scaler = train_and_test(alpha, predictors, predictor_params, xfn, yfn, n_users, percTest, featureset_to_use, w, phi_retain, force_balanced_classes, do_scaling, optimise_predictors, report=report, conf_report=conf_report)
                     #reports.append((alpha, report_name, y_true, y_pred))
                 else:
