@@ -4,29 +4,38 @@ class StudentSim():
         self.p = predictor
         self.scaler = scaler
         #self.s = None
-        self.haveseen = set()
+        self.havedone = set()
         #self.s = numpy.zeros(shape=swidth)
 
     def encodeinput(self, state, qenc):
         return state + qenc
 
-    def passprob(self, uK, qenc):
-        # take an encoded question and return a pass probability
-        inp = numpy.append(uK.flatten(), qenc.flatten()).reshape(1,-1)
-        sinp = self.scaler.transform(inp)
-        probs = self.p.predict_proba(sinp)
-        # print(probs)
-        return (probs[0][0])
+    # def passprob(self, uK, qenc):
+    #     # take an encoded question and return a pass probability
+    #     inp = numpy.append(uK.flatten(), qenc.flatten()).reshape(1,-1)
+    #     print(inp.shape)
+    #     print(inp)
+    #     sinp = self.scaler.transform(inp)
+    #     probs = self.p.predict(sinp) #_proba(sinp)
+    #     # print(probs)
+    #     #return (probs[0][0])
+    #     return 1 if probs==0 else 0
 
-    def doipass(self, A, uK, qenc):
+    def doipass(self, A, X, qenc):
         # take an encoded question and return true or false, stochastically
-        if A in self.haveseen:
+        # print(X.shape)
+        # print(qenc.shape)
+        inp = numpy.append(X.flatten(), qenc.flatten())
+        sinp = self.scaler.transform(inp.reshape(1, 68))
+        p = self.p.predict_proba(sinp)  # _proba(sinp)
+        print(p)
+
+        if A in self.havedone:
             #print("have seen!",A)
             return False
         else:
-            self.haveseen.add(A)
-            prob = self.passprob(uK, qenc)
-            if prob>=0.5:
+            if numpy.random.rand() <= p[0,0]:
+                self.havedone.add(A)
                 return True
             else:
                 return False
@@ -42,3 +51,7 @@ class StudentSim():
         assert len(numpy.nonzero(qenc))==1 # only one value shd be non zero
         catix = numpy.nonzero(qenc)[0]
         self.s[catix] = self.s[catix] + qenc[catix] # no learning rate specified yet!
+
+    def encode_student(self, S,K):
+        jnd = numpy.append(S.flatten(), K.flatten())
+        return jnd

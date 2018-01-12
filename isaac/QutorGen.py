@@ -7,7 +7,7 @@ from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.tree import ExtraTreeClassifier, DecisionTreeClassifier
 
-from isaac.itemencoding import gen_qenc, gen_X_primed, k_features, s_features, SS_SLEV_IX
+from isaac.itemencoding import gen_qenc, gen_X_primed, k_features, s_features, SS_SLEV_IX, create_S
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -63,7 +63,7 @@ predictor_params = [
     #{'n_iter':50, 'alpha': numpy.logspace(-3, 2) },
     # {'name':'RBFSVC', 'n_iter':50,'C': numpy.logspace(-2, 6), 'gamma': numpy.logspace(-9, 3)},
     {'name':'LSVC', 'n_iter':50,'C': numpy.logspace(-3, 4)},
-    {'name':'MLP', 'n_iter':50,'hidden_layer_sizes':[(300,),], 'learning_rate_init':[0.001, 0.01, 0.1], 'alpha': numpy.logspace(-6,2) },
+    {'name':'MLP', 'n_iter':50,'hidden_layer_sizes':[(80,),], 'learning_rate_init':[0.001, 0.01, 0.1], 'alpha': numpy.logspace(-6,2) },
     # {'name':'LOGREG', 'n_iter':50,'C': numpy.logspace(-3, 2)},
     {'name': "RFOR"},
      # {'name':"XTREE"},
@@ -138,6 +138,7 @@ def generate_run_files(alpha, _featureset_to_use, _w, phi, cats, cat_lookup, all
             # continue
             qt = q.replace("|","~")
             lev = levels[qt]
+            pass
             if(lev!=0):
                 all_zero_level=False
             else:
@@ -146,39 +147,16 @@ def generate_run_files(alpha, _featureset_to_use, _w, phi, cats, cat_lookup, all
             # atix = all_types.index( str( atypes.loc[qt,7] ) )
             # print(atix)
 
-            A = numpy.zeros(shape=1)
-            A[0] = 1.0 if str(atypes.loc[qt,7])=="choice" else 0.0
+            # A = numpy.zeros(shape=1)
+            qtype = 1.0 if str(atypes.loc[qt,7])=="choice" else 0.0
 
             # if lev<1:
             #     continue
 
             catix = cat_ixs[ cat_lookup[qt] ]
 
-            gen=0
-            age=0
-            u_def_lev=0
             if sprofs is not None:
-                gen = sprofs.loc[int(u),"gender"]
-                ts = pd.to_datetime(ts)
-                u_def_lev = sprofs.loc[int(u),"default_level"]
-                assert isinstance(u_def_lev, numpy.float64)
-                u_def_lev = 0 if numpy.isnan(u_def_lev) else (u_def_lev+1)
-                #print(ts)
-                dob_ts = pd.to_datetime( sprofs.loc[int(u),"date_of_birth"] )
-                #print(dob_ts)
-                age_delta = (ts - dob_ts)
-                min_age = pd.Timedelta(14*365.242, unit='d')
-                max_age = pd.Timedelta(20*365.242, unit='d')
-                age_delta = max_age if age_delta>max_age else max(age_delta, min_age)
-                age = age_delta.days / 365.242
-                if u_start_age is None:
-                    u_start_age = age_delta
-                print(age)
-                #print(age, age.seconds, age.days/365.242, type(age))
-                #exit()
-                S[0]=0 if gen=="MALE" else 1
-                S[1]=age
-                S[2]=u_def_lev
+                S, age, u_def_lev, u_start_age = create_S(S, sprofs, ts, u, u_start_age)
 
             passrate = passrates[qt]
             qpassqual = passquals[qt]
@@ -191,7 +169,7 @@ def generate_run_files(alpha, _featureset_to_use, _w, phi, cats, cat_lookup, all
             # catsxps[cix]=sqmx.loc[qt, c]
             print("attempting", lev)
             median_xp_to_s = mcmcdf.loc[qt,"mdRTS"]
-            qenc = gen_qenc(catix, median_xp_to_s, passrate, stretch, lev, qpassqual, catsxps)
+            qenc = gen_qenc(catix, median_xp_to_s, passrate, stretch, lev, qtype)
 
             #X_file.write(",".join([str(x) for x in X.flatten()])+","+",".join([str(e) for e in qenc.flatten()])+"\n")
             #print(X.shape, qenc.shape)
@@ -201,12 +179,11 @@ def generate_run_files(alpha, _featureset_to_use, _w, phi, cats, cat_lookup, all
             # jnd = numpy.append(S.flatten(), qenc.flatten())
             jnd = numpy.append(S.flatten(), X.flatten())
             jnd = numpy.append(jnd, qenc.flatten())
-            jnd = numpy.append(jnd, A.flatten())
             #print(jnd.shape)
 
             X_file.write(",".join([str(j) for j in jnd]) +"\n")
 
-            X, S = gen_X_primed(X, S, catix, alpha, phi, (n_pass > 0), passrate, qpassqual, stretch, lev, catsxps, n_atts)
+            X, S = gen_X_primed(X, S, catix, alpha, phi, (n_pass > 0), passrate, stretch, lev)
 
             if run_ix==0:
                 u_start_lev = lev+1
@@ -269,6 +246,8 @@ def generate_run_files(alpha, _featureset_to_use, _w, phi, cats, cat_lookup, all
     return x_filename,y_filename
 
 
+
+
 if __name__ == '__main__':
     featureset_to_use=FEAT_F33
     cmd='test'
@@ -322,8 +301,8 @@ if __name__ == '__main__':
         report = open(report_name,"w")
         conf_report = open(conf_report,"w")
     for w in [DW_BINARY]: #DW_NO_WEIGHT, DW_NATTS, DW_LEVEL, DW_PASSRATE, DW_MCMC, DW_STRETCH]:
-        for alpha in [1.0, 0.8, 0.6, 0.4, 0.2, 0.1]: #, 0.73, 0.37, 0.1]:
-            for phi_retain in [1.0, 0.66, 0.5, 0.33, 0.0]:
+        for alpha in [1.0]: #, 0.73, 0.37, 0.1]:
+            for phi_retain in [1.0]:
                 print(cat_ixs)
                 if do_test:
                     print("testing")
