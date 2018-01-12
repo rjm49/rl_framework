@@ -30,8 +30,8 @@ cats, cat_lookup, all_qids, users, diffs, levels, cat_ixs = init_objects(n_users
 passrates, stretches, passquals, all_qids = load_new_diffs("../../../isaac_data_files/pass_diffs.csv")
 mcmcdf = pandas.read_csv("../../../isaac_data_files/mcmc/dir_mcmc_results.csv", header=0, index_col=0)
 qtypes = pandas.read_csv("../../../isaac_data_files/atypes.csv", header=None, index_col=0)
-predictor = pickle.load(open("p_RFOR_1.0_1.0.pkl", "rb"))
-scaler = pickle.load(open("qutor_scaler.pkl", "rb"))
+predictor = pickle.load(open("../../../isaac_data_files/p_RFOR_1.0_1.0.pkl", "rb"))
+scaler = pickle.load(open("../../../isaac_data_files/qutor_scaler.pkl", "rb"))
 print("loaded data")
 
 all_qids = list(all_qids)
