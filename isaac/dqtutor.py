@@ -17,7 +17,7 @@ class DQTutor:
         self.memory = deque(maxlen=1000)
         self.gamma = 1.0    # discount rate
         self.counter = 0
-        self.explore_period = 10000
+        self.explore_period = 100000
         self.epsilon = 1.0  # exploration rate
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.9999

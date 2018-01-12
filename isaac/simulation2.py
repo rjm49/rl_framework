@@ -21,7 +21,6 @@ from matplotlib import pyplot as plt
 from isaac.dqtutor import DQTutor
 from isaac.itemencoding import create_S
 
-target = 1000
 n_users = 1000
 # random.seed(666)
 scores = []
@@ -63,9 +62,9 @@ print("init'd Qutor")
 
 print("starting loops...")
 
-n_trials = 20000
+n_trials = 1000000
 n_lessons = 10
-scores = pandas.DataFrame(index=range(n_trials), columns=["score"])
+scores = pandas.DataFrame(index=range(n_trials))
 end = False
 for x in range(n_trials):
     print("\nstudent {}, eps{}".format(x, dqutor.epsilon))
@@ -102,7 +101,7 @@ for x in range(n_trials):
         # print("****")
         # print(X)
         # print(qenc)
-        # print("****")
+        # print("****")20000
         # print(X.shape, qenc.shape)
 
         R=0
@@ -127,15 +126,20 @@ for x in range(n_trials):
         X = student.encode_student(S,K)
         # qutor.sa_update(xX, A, R, X)
         if i==n_lessons-1:
-            R=score
+            score
             end = True
-        dqutor.updateQ(xX, Aix, R, X, end)
-        dqutor.remember(xX, Aix, R, X, end)
-        lssns.append(Aix)
+            dqutor.updateQ(xX, Aix, score, X, end)
+            dqutor.remember(xX, Aix, score, X, end)
+        else:
+            dqutor.updateQ(xX, Aix, R, X, end)
+            dqutor.remember(xX, Aix, R, X, end)
+            lssns.append(Aix)
         dqutor.replay(32)
     print(" ", score, lssns)
-    scores.loc[x,"score"] = score
+    scores.loc[x,"student score"] = score
+    scores.loc[x,"agent return"] = R
 
 print("plotting")
+scores.to_csv("../../../isaac_data_files/sim2.csv")
 scores.plot()
-plt.show()
+plt.savefig('../../../isaac_data_files/sim2.png')
