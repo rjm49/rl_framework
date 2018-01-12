@@ -95,7 +95,7 @@ def generate_run_files(alpha, _featureset_to_use, _w, phi, cats, cat_lookup, all
     # xpcnts = pd.DataFrame.from_csv("../../isaacdata/mcmc/toplot.csv")
     # sqmx = pd.DataFrame.from_csv("../../isaacdata/mcmc/sqmx.csv")
     # sqmx = pd.DataFrame.from_csv("../../isaacdata/mcmc/sqmx.csv")
-    atypes = pd.DataFrame.from_csv("../../isaacdata/atypes.csv", header=None)
+    atypes = pd.DataFrame.from_csv("../../../isaac_data_files/atypes.csv", header=None)
     all_types = list(pd.unique(atypes[7]))
 
     user_summary_df = pd.DataFrame(columns=["runs","age","def_lev", "start_lev", "start_lev10", "end_lev", "end_lev10","end_age", "max_lev","ts_delta","qpd","rox_delta","max_delta","pant_delta","pant_avg","rox10","roxend","pantheon"], index=users)
@@ -124,7 +124,7 @@ def generate_run_files(alpha, _featureset_to_use, _w, phi, cats, cat_lookup, all
         # attempts = pd.read_csv("../../isaacdata/by_user/{}.txt".format(u), header=None)
         # runs = extract_runs_w_timestamp(attempts)
         # fout = open("../../isaacdata/by_runs/{}.txt".format(u), "w")
-        runs = open("../../isaacdata/by_runs/{}.txt".format(u)).readlines()
+        runs = open("../../../isaac_data_files/by_runs/{}.txt".format(u)).readlines()
         u_run_ct = len(runs)
         all_zero_level = True
         for run_ix,run in enumerate(runs):
@@ -276,14 +276,14 @@ if __name__ == '__main__':
     optimise_predictors = True
     n_classes = 2
     print("n_users",n_users)
-    cats, cat_lookup, all_qids, users, _stretches_, levels, cat_ixs = init_objects(n_users, path="../../isaacdata/", seed=666)
+    cats, cat_lookup, all_qids, users, _stretches_, levels, cat_ixs = init_objects(n_users, path="../../../isaac_data_files/", seed=666)
 
     #users = open("../mcmc/mcmc_uesrs.txt").read().splitlines()
 
-    passdiffs, stretches, passquals, all_qids = load_new_diffs("../../isaacdata/pass_diffs.csv")
-    mcmcdf = pd.DataFrame.from_csv("../../isaacdata/mcmc/dir_mcmc_results.csv")
+    passdiffs, stretches, passquals, all_qids = load_new_diffs("../../../isaac_data_files/pass_diffs.csv")
+    mcmcdf = pd.DataFrame.from_csv("../../../isaac_data_files/mcmc/dir_mcmc_results.csv")
 
-    sprofs = pd.DataFrame.from_csv("../../isaacdata/student_profiling/users_all.csv")
+    sprofs = pd.DataFrame.from_csv("../../../isaac_data_files/student_profiling/users_all.csv")
     sprofs = sprofs[sprofs["role"]=="STUDENT"]
     sprofs = sprofs[sprofs["date_of_birth"].notna()]
     sprofs = sprofs[sprofs.index.isin(users)]
