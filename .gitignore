@@ -25,3 +25,4 @@ local.properties
 inferred*
 reinf_env/*
 compare_logs/*
+.idea/*
