@@ -26,10 +26,10 @@ n_users = 1000
 # random.seed(666)
 scores = []
 
-cats, cat_lookup, all_qids, users, diffs, levels, cat_ixs = init_objects(n_users, path="../../isaacdata/")
-passrates, stretches, passquals, all_qids = load_new_diffs("../../isaacdata/pass_diffs.csv")
-mcmcdf = pandas.read_csv("../../isaacdata/mcmc/dir_mcmc_results.csv", header=0, index_col=0)
-qtypes = pandas.read_csv("../../isaacdata/atypes.csv", header=None, index_col=0)
+cats, cat_lookup, all_qids, users, diffs, levels, cat_ixs = init_objects(n_users, path="../../../isaac_data_files/")
+passrates, stretches, passquals, all_qids = load_new_diffs("../../../isaac_data_files/pass_diffs.csv")
+mcmcdf = pandas.read_csv("../../../isaac_data_files/mcmc/dir_mcmc_results.csv", header=0, index_col=0)
+qtypes = pandas.read_csv("../../../isaac_data_files/atypes.csv", header=None, index_col=0)
 predictor = pickle.load(open("p_RFOR_1.0_1.0.pkl", "rb"))
 scaler = pickle.load(open("qutor_scaler.pkl", "rb"))
 print("loaded data")
@@ -52,7 +52,7 @@ for aix,A in enumerate(actions):
     qencs[aix] = (A, qenc)
 print("qenc cache populated")
 
-sprofs = pandas.read_csv("../../isaacdata/student_profiling/users_all.csv", header=0, index_col=0)
+sprofs = pandas.read_csv("../../../isaac_data_files/student_profiling/users_all.csv", header=0, index_col=0)
 sprofs = sprofs[sprofs["role"] == "STUDENT"]
 sprofs = sprofs[sprofs["date_of_birth"].notna()]
 sprofs = sprofs[sprofs.index.isin(users)]
