@@ -4,10 +4,10 @@ import random
 
 import matplotlib
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
-from sklearn.naive_bayes import BernoulliNB
+from sklearn.naive_bayes import BernoulliNB, GaussianNB
 from sklearn.tree import ExtraTreeClassifier, DecisionTreeClassifier
 
-from isaac.itemencoding import gen_qenc, gen_X_primed, k_features, s_features, SS_SLEV_IX, create_S
+from isaac.itemencoding import gen_qenc, gen_X_primed, k_features, s_features, SS_SLEV_IX, create_S, n_components
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -44,6 +44,7 @@ max_runs = None #10000
 percTest = 0.1
 
 predictors = [
+    # GaussianNB(),
     # DummyClassifier(strategy="stratified"),
     # DummyClassifier(strategy="uniform"),
     # BernoulliNB(),
@@ -58,6 +59,7 @@ predictors = [
 ]
 
 predictor_params = [
+    # {'name':'GaussNB'},
     # None,
     # None,
     #{'n_iter':50, 'alpha': numpy.logspace(-3, 2) },
@@ -72,16 +74,18 @@ predictor_params = [
 ]
 
 def generate_run_files(alpha, _featureset_to_use, _w, phi, cats, cat_lookup, all_qids, users, stretches, passrates, passquals, levels, mcmcdf, cat_ixs, profiles=None):
+    base = "../../../isaac_data_files/"
     stem = _featureset_to_use+"_"+str(alpha) + "_" + str(phi) + "_" + _w
-    x_filename= stem+"_X.csv"
-    y_filename= stem+"_y.csv"
-    uq_filename= stem+"_uq.csv"
+    x_filename= base + stem+"_X.csv"
+    y_filename= base + stem+"_y.csv"
+    uq_filename= base + stem+"_uq.csv"
 
-    X_file = open(stem+"_X.csv","w")
-    y_file = open(stem+"_y.csv","w")
+    X_file = open(x_filename,"w")
+    #X_file = []
+    #X_file = numpy.zeros(shape=(0,n_components))
+    y_file = open(y_filename,"w")
     uq_file = open(uq_filename, "w")
 
-    n_components = len(cats)
     #     all_X = numpy.zeros(shape=(0,n_features))
 
     # tmx = numpy.loadtxt("../mcmc/X.csv", delimiter=",") # load the prob transition mx
@@ -95,7 +99,7 @@ def generate_run_files(alpha, _featureset_to_use, _w, phi, cats, cat_lookup, all
     # xpcnts = pd.DataFrame.from_csv("../../isaacdata/mcmc/toplot.csv")
     # sqmx = pd.DataFrame.from_csv("../../isaacdata/mcmc/sqmx.csv")
     # sqmx = pd.DataFrame.from_csv("../../isaacdata/mcmc/sqmx.csv")
-    atypes = pd.DataFrame.from_csv("../../isaacdata/atypes.csv", header=None)
+    atypes = pd.DataFrame.from_csv("../../../isaac_data_files/atypes.csv", header=None)
     all_types = list(pd.unique(atypes[7]))
 
     user_summary_df = pd.DataFrame(columns=["runs","age","def_lev", "start_lev", "start_lev10", "end_lev", "end_lev10","end_age", "max_lev","ts_delta","qpd","rox_delta","max_delta","pant_delta","pant_avg","rox10","roxend","pantheon"], index=users)
@@ -118,13 +122,13 @@ def generate_run_files(alpha, _featureset_to_use, _w, phi, cats, cat_lookup, all
         roxend=None
         print("user = ", u)
         S = numpy.zeros(shape=s_features)
-        X = numpy.zeros(shape=(n_components,k_features) ) #init'se a new feature vector w same width as all_X
+        X = numpy.zeros(shape=n_components ) #init'se a new feature vector w same width as all_X
         oplev = 0.0
         print(X.shape)
         # attempts = pd.read_csv("../../isaacdata/by_user/{}.txt".format(u), header=None)
         # runs = extract_runs_w_timestamp(attempts)
         # fout = open("../../isaacdata/by_runs/{}.txt".format(u), "w")
-        runs = open("../../isaacdata/by_runs/{}.txt".format(u)).readlines()
+        runs = open("../../../isaac_data_files/by_runs/{}.txt".format(u)).readlines()
         u_run_ct = len(runs)
         all_zero_level = True
         for run_ix,run in enumerate(runs):
@@ -154,6 +158,7 @@ def generate_run_files(alpha, _featureset_to_use, _w, phi, cats, cat_lookup, all
             #     continue
 
             catix = cat_ixs[ cat_lookup[qt] ]
+            qix = all_qids.index(qt)
 
             if sprofs is not None:
                 S, age, u_def_lev, u_start_age = create_S(S, sprofs, ts, u, u_start_age)
@@ -182,8 +187,9 @@ def generate_run_files(alpha, _featureset_to_use, _w, phi, cats, cat_lookup, all
             #print(jnd.shape)
 
             X_file.write(",".join([str(j) for j in jnd]) +"\n")
+            #X_file.append(jnd)
 
-            X, S = gen_X_primed(X, S, catix, alpha, phi, (n_pass > 0), passrate, stretch, lev)
+            X, S = gen_X_primed(X, S, qix, alpha, phi, (n_pass > 0), passrate, stretch, lev)
 
             if run_ix==0:
                 u_start_lev = lev+1
@@ -232,14 +238,19 @@ def generate_run_files(alpha, _featureset_to_use, _w, phi, cats, cat_lookup, all
 
     user_summary_df.dropna(inplace=True)
     user_summary_df = user_summary_df.infer_objects()
-    user_summary_df.to_csv("user_summary_df.csv")
+    user_summary_df.to_csv("../../../isaac_data_files/user_summary_df.csv")
     #deltadf = user_summary_df["rox_delta"]
     # print(type(deltadf))
     # print(deltadf.head())
     # user_summary_df.loc[:,"max_lev"].plot.hist(bins=7)
 
-
-    X_file.close()
+    # X_file.close
+    # pdf = pd.read_csv(x_filename, header=None, index_col=None)
+    # print("writing hdf...")
+    # pdf.to_hdf(x_filename+".hdf", "table")
+    x = numpy.loadtxt(x_filename, delimiter=",")
+    numpy.save(x_filename, x)
+    print("done!")
     y_file.close()
     uq_file.close()
     print(n_users, "users", run_ct,"runs", run_ct/float(n_users), "rpu")
@@ -258,7 +269,7 @@ if __name__ == '__main__':
 
     if cmd.startswith('p'):
         #do plots
-        user_summary_df = pd.DataFrame.from_csv("user_summary_df.csv", header=0, index_col=0)
+        user_summary_df = pd.DataFrame.from_csv("../../../isaac_data_files/user_summary_df.csv", header=0, index_col=0)
         print(user_summary_df.shape)
         print(user_summary_df.dtypes)
         print(user_summary_df.dtypes)
@@ -276,14 +287,16 @@ if __name__ == '__main__':
     optimise_predictors = True
     n_classes = 2
     print("n_users",n_users)
-    cats, cat_lookup, all_qids, users, _stretches_, levels, cat_ixs = init_objects(n_users, path="../../isaacdata/", seed=666)
+    cats, cat_lookup, all_qids, users, _stretches_, levels, cat_ixs = init_objects(n_users, path="../../../isaac_data_files/", seed=666)
 
     #users = open("../mcmc/mcmc_uesrs.txt").read().splitlines()
 
-    passdiffs, stretches, passquals, all_qids = load_new_diffs("../../isaacdata/pass_diffs.csv")
-    mcmcdf = pd.DataFrame.from_csv("../../isaacdata/mcmc/dir_mcmc_results.csv")
+    passdiffs, stretches, passquals, all_qids = load_new_diffs("../../../isaac_data_files/pass_diffs.csv")
+    mcmcdf = pd.DataFrame.from_csv("../../../isaac_data_files/mcmc/dir_mcmc_results.csv")
 
-    sprofs = pd.DataFrame.from_csv("../../isaacdata/student_profiling/users_all.csv")
+    all_qids = list(all_qids)
+
+    sprofs = pd.DataFrame.from_csv("../../../isaac_data_files/student_profiling/users_all.csv")
     sprofs = sprofs[sprofs["role"]=="STUDENT"]
     sprofs = sprofs[sprofs["date_of_birth"].notna()]
     sprofs = sprofs[sprofs.index.isin(users)]
@@ -295,8 +308,8 @@ if __name__ == '__main__':
     # stretches = adf.loc[:,"med_n_pass"] / adf.loc[:,"med_n_atts"]
 
     reports =[]
-    report_name = "qutorgen_{}_{}_fb{}_opt{}_scale{}_{}.csv".format(0, n_users, str(1 if force_balanced_classes else 0), ("001" if optimise_predictors else "0"), ("1" if do_scaling else "0"), featureset_to_use)
-    conf_report = "confusion.txt"
+    report_name = "../../../isaac_data_files/qutorgen_{}_{}_fb{}_opt{}_scale{}_{}.csv".format(0, n_users, str(1 if force_balanced_classes else 0), ("001" if optimise_predictors else "0"), ("1" if do_scaling else "0"), featureset_to_use)
+    conf_report = "../../../isaac_data_files/confusion.txt"
     if do_test:
         report = open(report_name,"w")
         conf_report = open(conf_report,"w")
@@ -306,8 +319,8 @@ if __name__ == '__main__':
                 print(cat_ixs)
                 if do_test:
                     print("testing")
-                    xfn = "F33_{}_{}_{}_X.csv".format(str(alpha), str(phi_retain), w)
-                    yfn = "F33_{}_{}_{}_y.csv".format(str(alpha), str(phi_retain), w)
+                    xfn = "../../../isaac_data_files/F33_{}_{}_{}_X.csv".format(str(alpha), str(phi_retain), w)
+                    yfn = "../../../isaac_data_files/F33_{}_{}_{}_y.csv".format(str(alpha), str(phi_retain), w)
                     X_train, X_test, y_pred_tr, y_pred, y_true, scaler = train_and_test(alpha, predictors, predictor_params, xfn, yfn, n_users, percTest, featureset_to_use, w, phi_retain, force_balanced_classes, do_scaling, optimise_predictors, report=report, conf_report=conf_report)
                     #reports.append((alpha, report_name, y_true, y_pred))
                 else:

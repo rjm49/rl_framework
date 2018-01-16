@@ -19,28 +19,30 @@ from matplotlib import pyplot as plt
 # RL Tutor
 # Goal - first to 100 correct questions
 from isaac.dqtutor import DQTutor
-from isaac.itemencoding import create_S
+from isaac.itemencoding import create_S, X_width, student_state_width
 
 target = 1000
 n_users = 1000
 # random.seed(666)
 scores = []
 
-cats, cat_lookup, all_qids, users, diffs, levels, cat_ixs = init_objects(n_users, path="../../isaacdata/")
-passrates, stretches, passquals, all_qids = load_new_diffs("../../isaacdata/pass_diffs.csv")
-mcmcdf = pandas.read_csv("../../isaacdata/mcmc/dir_mcmc_results.csv", header=0, index_col=0)
-qtypes = pandas.read_csv("../../isaacdata/atypes.csv", header=None, index_col=0)
-predictor = pickle.load(open("p_RFOR_1.0_1.0.pkl", "rb"))
-scaler = pickle.load(open("qutor_scaler.pkl", "rb"))
+cats, cat_lookup, all_qids, users, diffs, levels, cat_ixs = init_objects(n_users, path="../../../isaac_data_files/")
+passrates, stretches, passquals, all_qids = load_new_diffs("../../../isaac_data_files/pass_diffs.csv")
+mcmcdf = pandas.read_csv("../../../isaac_data_files/mcmc/dir_mcmc_results.csv", header=0, index_col=0)
+qtypes = pandas.read_csv("../../../isaac_data_files/atypes.csv", header=None, index_col=0)
+predictor = pickle.load(open("../../../isaac_data_files/p_RFOR_1.0_1.0.pkl", "rb"))
+rdim = pickle.load(open("../../../isaac_data_files/qutor_rdim.pkl", "rb"))
+scaler = pickle.load(open("../../../isaac_data_files/qutor_scaler.pkl", "rb"))
 print("loaded data")
 
 all_qids = list(all_qids)
 random.shuffle(all_qids)
 
 n_actions = 100
+
 actions = tuple(all_qids)[0:n_actions]
 # qutor = Qutor(alpha=0.1, gamma=1.0, eps=1000, actions=actions)
-dqutor = DQTutor(34,n_actions)
+dqutor = DQTutor(student_state_width,n_actions)
 qencs = {}
 #prep the action bank
 for aix,A in enumerate(actions):
@@ -52,7 +54,7 @@ for aix,A in enumerate(actions):
     qencs[aix] = (A, qenc)
 print("qenc cache populated")
 
-sprofs = pandas.read_csv("../../isaacdata/student_profiling/users_all.csv", header=0, index_col=0)
+sprofs = pandas.read_csv("../../../isaac_data_files/student_profiling/users_all.csv", header=0, index_col=0)
 sprofs = sprofs[sprofs["role"] == "STUDENT"]
 sprofs = sprofs[sprofs["date_of_birth"].notna()]
 sprofs = sprofs[sprofs.index.isin(users)]
@@ -69,7 +71,7 @@ scores = pandas.DataFrame(index=range(n_trials), columns=["score"])
 end = False
 for x in range(n_trials):
     print("\nstudent {}, eps{}".format(x, dqutor.epsilon))
-    student = StudentSim(predictor, scaler)
+    student = StudentSim(predictor, rdim, scaler)
     K = numpy.zeros(shape=(itemencoding.n_components, itemencoding.k_features))  # K33 vector encoding
     S = numpy.zeros(shape=itemencoding.s_features)
     qtype = numpy.zeros(shape=1)
@@ -122,16 +124,21 @@ for x in range(n_trials):
             R = -1
 
         #print(K)
+        # print("copying Xx")
         xX = numpy.copy(X)
+        # print("gen'g X'")
         K,S = gen_X_primed(K, S, cat_ixs[cat_lookup[A]], alpha, phi, passed, passrates[A], stretches[A], levels[A])
+        # print("encdoing X")
         X = student.encode_student(S,K)
         # qutor.sa_update(xX, A, R, X)
         if i==n_lessons-1:
             R=score
             end = True
+        # print("updating Q")
         dqutor.updateQ(xX, Aix, R, X, end)
         dqutor.remember(xX, Aix, R, X, end)
         lssns.append(Aix)
+        # print("replay 32")
         dqutor.replay(32)
     print(" ", score, lssns)
     scores.loc[x,"score"] = score

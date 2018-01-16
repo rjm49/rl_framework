@@ -1,7 +1,12 @@
 import numpy
+
+from isaac.itemencoding import student_state_width, X_width
+
+
 class StudentSim():
-    def __init__(self, predictor, scaler):
+    def __init__(self, predictor, rdim, scaler):
         self.p = predictor
+        self.rdim = rdim
         self.scaler = scaler
         #self.s = None
         self.havedone = set()
@@ -26,8 +31,12 @@ class StudentSim():
         # print(X.shape)
         # print(qenc.shape)
         inp = numpy.append(X.flatten(), qenc.flatten())
-        sinp = self.scaler.transform(inp.reshape(1, 68))
-        p = self.p.predict_proba(sinp)  # _proba(sinp)
+        # print("dip/flattened")
+        txd_inp = self.rdim.transform(inp.reshape(1, X_width))
+        # print("dip/rdimd")
+        txd_inp = self.scaler.transform(txd_inp)
+        # print("dip/scaled")
+        p = self.p.predict_proba(txd_inp)  # _proba(txd_inp)
         print(p)
 
         if A in self.havedone:
