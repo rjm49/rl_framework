@@ -38,7 +38,7 @@ print("loaded data")
 all_qids = list(all_qids)
 random.shuffle(all_qids)
 
-n_actions = 100
+n_actions = 12
 
 actions = tuple(all_qids)[0:n_actions]
 # qutor = Qutor(alpha=0.1, gamma=1.0, eps=1000, actions=actions)
@@ -66,8 +66,8 @@ print("init'd Qutor")
 print("starting loops...")
 
 n_trials = 20000
-n_lessons = 10
-scores = pandas.DataFrame(index=range(n_trials), columns=["score"])
+n_lessons = 4
+scores = pandas.DataFrame(index=range(n_trials), columns=["score","return"])
 end = False
 for x in range(n_trials):
     print("\nstudent {}, eps{}".format(x, dqutor.epsilon))
@@ -95,6 +95,7 @@ for x in range(n_trials):
     lssns = []
     X = student.encode_student(S,K)
     score = 0
+    Rtot = 0
     for i in range(n_lessons):  # what score can we get in 100 moves?
         print("X sum ...", numpy.sum(X))
 
@@ -116,7 +117,7 @@ for x in range(n_trials):
         if student.doipass(A, X, qenc) == True:
             print("S{}".format("!" if exp==True else "."), end="")
             passed = True
-            R+=5
+            R = 1
             score += 10
         else:
             print("f{}".format("!" if exp==True else "."), end="")
@@ -125,6 +126,7 @@ for x in range(n_trials):
 
         #print(K)
         # print("copying Xx")
+        Rtot += R
         xX = numpy.copy(X)
         # print("gen'g X'")
         K,S = gen_X_primed(K, S, cat_ixs[cat_lookup[A]], alpha, phi, passed, passrates[A], stretches[A], levels[A])
@@ -139,9 +141,9 @@ for x in range(n_trials):
         dqutor.remember(xX, Aix, R, X, end)
         lssns.append(Aix)
         # print("replay 32")
-        dqutor.replay(32)
+        #dqutor.replay(32)
     print(" ", score, lssns)
-    scores.loc[x,"score"] = score
+    scores.loc[x,["score","return"]] = [score,Rtot]
 
 print("plotting")
 scores.plot()
