@@ -17,10 +17,10 @@ class DQTutor:
         self.memory = deque(maxlen=1000)
         self.gamma = 1.0    # discount rate
         self.counter = 0
-        self.explore_period = 10000
+        self.explore_period = 100
         self.epsilon = 1.0  # exploration rate
-        self.epsilon_min = 0.01
-        self.epsilon_decay = 0.9999
+        self.epsilon_min = 0.001
+        self.epsilon_decay = 0.999
         self.learning_rate = 0.5
         self.model = self._build_model()
     def _build_model(self):
@@ -28,8 +28,9 @@ class DQTutor:
 
         model = Sequential()
         # model.add(Dense(2*self.state_size, input_dim=self.state_size, activation='relu'))
-        model.add(Dense(self.action_size, input_dim=self.state_size, activation='relu')) #, activation='relu'))
-        model.add(Dense(self.action_size, activation='linear'))
+        model.add(Dense(self.state_size, input_dim=self.state_size, activation='tanh')) #, activation='relu'))
+        #model.add(Dense(self.state_size, activation='relu')) #, activation='relu'))
+        model.add(Dense(self.action_size, activation='softmax'))
         model.compile(loss='mse',
                       optimizer=Adam(lr=self.learning_rate))
         return model

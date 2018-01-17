@@ -65,7 +65,7 @@ print("init'd Qutor")
 
 print("starting loops...")
 
-n_trials = 20000
+n_trials = 500
 n_lessons = 4
 scores = pandas.DataFrame(index=range(n_trials), columns=["score","return"])
 end = False
@@ -141,7 +141,7 @@ for x in range(n_trials):
         dqutor.remember(xX, Aix, R, X, end)
         lssns.append(Aix)
         # print("replay 32")
-        #dqutor.replay(32)
+        dqutor.replay(32)
     print(" ", score, lssns)
     scores.loc[x,["score","return"]] = [score,Rtot]
 
