@@ -39,18 +39,14 @@ class StudentSim():
         p = self.p.predict_proba(txd_inp)  # _proba(txd_inp)
         print(p)
 
-        if A in self.havedone:
-            #print("have seen!",A)
-            return False
+        if numpy.random.rand() <= p[0,0]:
+            self.havedone.add(A)
+            return True
         else:
-            if numpy.random.rand() <= p[0,0]:
-                self.havedone.add(A)
-                return True
-            else:
-                return False
-            #att = numpy.random.normal()
-            # print("ppass {}, attempt {}".format(prob, att))
-            #return att < prob
+            return False
+        #att = numpy.random.normal()
+        # print("ppass {}, attempt {}".format(prob, att))
+        #return att < prob
 
     def updatemystate(self, qenc, passed=False):
         #do the state update thing here

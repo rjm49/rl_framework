@@ -65,9 +65,10 @@ print("init'd Qutor")
 
 print("starting loops...")
 
-n_trials = 500
+n_trials = 10000
+dqutor.explore_period = 20000
 n_lessons = 4
-scores = pandas.DataFrame(index=range(n_trials), columns=["score","return"])
+scores = pandas.DataFrame(index=range(n_trials), columns=["score","return","reps"])
 end = False
 for x in range(n_trials):
     print("\nstudent {}, eps{}".format(x, dqutor.epsilon))
@@ -111,13 +112,13 @@ for x in range(n_trials):
         R=0
 
         if A in student.havedone:
+            print("   dupe ")
             reps += 1
-            R = -5
-
-        if student.doipass(A, X, qenc) == True:
+            R = -50
+        elif student.doipass(A, X, qenc) == True:
             print("S{}".format("!" if exp==True else "."), end="")
             passed = True
-            R = 1
+            R = 5
             score += 10
         else:
             print("f{}".format("!" if exp==True else "."), end="")
@@ -133,17 +134,17 @@ for x in range(n_trials):
         # print("encdoing X")
         X = student.encode_student(S,K)
         # qutor.sa_update(xX, A, R, X)
-        if i==n_lessons-1:
-            R=score
-            end = True
+        # if i==n_lessons-1:
+        #     R=score
+        #     end = True
         # print("updating Q")
         dqutor.updateQ(xX, Aix, R, X, end)
         dqutor.remember(xX, Aix, R, X, end)
         lssns.append(Aix)
         # print("replay 32")
-        dqutor.replay(32)
-    print(" ", score, lssns)
-    scores.loc[x,["score","return"]] = [score,Rtot]
+        #dqutor.replay(32)
+    print(" ", score, lssns, reps)
+    scores.loc[x,["score","return","reps"]] = [score,Rtot,reps]
 
 print("plotting")
 scores.plot()
