@@ -21,7 +21,6 @@ from matplotlib import pyplot as plt
 from isaac.dqtutor import DQTutor
 from isaac.itemencoding import create_S, X_width, student_state_width
 
-target = 1000
 n_users = 1000
 # random.seed(666)
 scores = []
@@ -35,12 +34,16 @@ rdim = pickle.load(open("../../../isaac_data_files/qutor_rdim.pkl", "rb"))
 scaler = pickle.load(open("../../../isaac_data_files/qutor_scaler.pkl", "rb"))
 print("loaded data")
 
-all_qids = list(all_qids)
-random.shuffle(all_qids)
+all_qids = open("./old_fasttrack.txt","r").read().splitlines()
+print(all_qids)
+n_actions = len(all_qids)
 
-n_actions = 12
+# all_qids = list(all_qids)
+# random.shuffle(all_qids)
+# n_actions = 25
+actions = tuple(all_qids) #[0:n_actions]
+coreqs = [q for q in actions if ("core" in q)]
 
-actions = tuple(all_qids)[0:n_actions]
 # qutor = Qutor(alpha=0.1, gamma=1.0, eps=1000, actions=actions)
 dqutor = DQTutor(student_state_width,n_actions)
 qencs = {}
@@ -65,15 +68,23 @@ print("init'd Qutor")
 
 print("starting loops...")
 
-n_trials = 10000
-dqutor.explore_period = 20000
-n_lessons = 4
-scores = pandas.DataFrame(index=range(n_trials), columns=["score","return","reps"])
+n_trials = 3000 #24k
+n_lessons = 10
+rv=19
+
+#dqutor.explore_period = (n_trials * n_lessons) // 2
+dqutor.explore_period = 0;
+print(n_trials, rv, dqutor.explore_period)
+# exit()
+scores = pandas.DataFrame(index=range(n_trials), columns=["student's score","tutor's return","repeated qns","epsilon"])
 end = False
+fcnt = 0
+scnt = 0
 for x in range(n_trials):
     print("\nstudent {}, eps{}".format(x, dqutor.epsilon))
     student = StudentSim(predictor, rdim, scaler)
     K = numpy.zeros(shape=(itemencoding.n_components, itemencoding.k_features))  # K33 vector encoding
+    K[0:n_actions]=0
     S = numpy.zeros(shape=itemencoding.s_features)
     qtype = numpy.zeros(shape=1)
 
@@ -96,56 +107,59 @@ for x in range(n_trials):
     lssns = []
     X = student.encode_student(S,K)
     score = 0
+    max_score = 0
     Rtot = 0
+
     for i in range(n_lessons):  # what score can we get in 100 moves?
-        print("X sum ...", numpy.sum(X))
+        print("".join(map(str, map(int, 10 * X))))
 
         Aix, exp = dqutor.act(X)
-        # print("action is",Aix)
         A, qenc = qencs[Aix]
-        # print("****")
-        # print(X)
-        # print(qenc)
-        # print("****")
-        # print(X.shape, qenc.shape)
-
         R=0
 
         if A in student.havedone:
-            print("   dupe ")
             reps += 1
-            R = -50
-        elif student.doipass(A, X, qenc) == True:
-            print("S{}".format("!" if exp==True else "."), end="")
-            passed = True
-            R = 5
-            score += 10
-        else:
-            print("f{}".format("!" if exp==True else "."), end="")
+            R = -10
             passed = False
+        elif student.doipass(A, X, qenc) == True:
+            passed = True
             R = -1
+            scnt+=1
+        else:
+            passed = False
+            R = -2
+            fcnt+=1
 
         #print(K)
         # print("copying Xx")
         Rtot += R
         xX = numpy.copy(X)
         # print("gen'g X'")
-        K,S = gen_X_primed(K, S, cat_ixs[cat_lookup[A]], alpha, phi, passed, passrates[A], stretches[A], levels[A])
+        K,S = gen_X_primed(K, S, Aix, alpha, phi, passed, passrates[A], stretches[A], levels[A])
         # print("encdoing X")
         X = student.encode_student(S,K)
         # qutor.sa_update(xX, A, R, X)
-        # if i==n_lessons-1:
-        #     R=score
-        #     end = True
+        if i==n_lessons-1:
+            R+=score
+            Rtot+=score
+            end = True
         # print("updating Q")
         dqutor.updateQ(xX, Aix, R, X, end)
+        dqutor.counter += 1
+        # print("counter ---- ", dqutor.counter)
         dqutor.remember(xX, Aix, R, X, end)
         lssns.append(Aix)
         # print("replay 32")
-        #dqutor.replay(32)
+        dqutor.replay(rv)
     print(" ", score, lssns, reps)
-    scores.loc[x,["score","return","reps"]] = [score,Rtot,reps]
+    scores.loc[x,["student's score","tutor's return","repeated qns","epsilon"]] = [score,Rtot,reps,dqutor.epsilon]
+scores["student's score"] = scores["student's score"].rolling(50).mean()
+scores["tutor's return"] = scores["tutor's return"].rolling(50).mean()
+
+print("s/f counts:")
+print(scnt, fcnt)
 
 print("plotting")
 scores.plot()
 plt.show()
+plt.savefig("../../../isaac_data_files/sim2.png")

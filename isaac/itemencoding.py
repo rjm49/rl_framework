@@ -58,5 +58,5 @@ def gen_qenc(catix, median_xp_to_s, passrate, stretch, lev, qtype):
 
 SS_SLEV_IX = 3
 def gen_X_primed(X, S, qix, alpha, fade, is_pass, passrate, stretch, lev):
-    X[qix] = 1 if is_pass else -1
+    X[qix] = 0.3 if is_pass else 0.2
     return X, S

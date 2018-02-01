@@ -40,6 +40,7 @@ class StudentSim():
         print(p)
 
         if numpy.random.rand() <= p[0,0]:
+        # if p[0,0] > 0.5:
             self.havedone.add(A)
             return True
         else:
