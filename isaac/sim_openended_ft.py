@@ -38,9 +38,6 @@ all_qids = open("./old_fasttrack.txt","r").read().splitlines()
 print(all_qids)
 n_actions = len(all_qids)
 
-# all_qids = list(all_qids)
-# random.shuffle(all_qids)
-# n_actions = 25
 actions = tuple(all_qids) #[0:n_actions]
 coreqs = [q for q in actions if ("core" in q)]
 
@@ -68,15 +65,16 @@ print("init'd Qutor")
 
 print("starting loops...")
 
-n_trials = 8000 #24k
-n_lessons = 10
+n_trials = 5000 #24k
 rv=19
 
 #dqutor.explore_period = (n_trials * n_lessons) // 2
+dqutor.epsilon = 1.0;
 dqutor.explore_period = 0;
 print(n_trials, rv, dqutor.explore_period)
 # exit()
-scores = pandas.DataFrame(index=range(n_trials), columns=["student's score","tutor's return","repeated qns","epsilon"])
+ST_SCORE="student score"
+scores = pandas.DataFrame(index=range(n_trials), columns=[ST_SCORE,"tutor's return","repeated qns","epsilon"])
 end = False
 fcnt = 0
 scnt = 0
@@ -110,7 +108,9 @@ for x in range(n_trials):
     max_score = 0
     Rtot = 0
 
-    for i in range(n_lessons):  # what score can we get in 100 moves?
+    #for i in range(n_lessons):  # what score can we get in 100 moves?
+    n_lessons = 100
+    for ls in range(n_lessons):
         print("".join(map(str, map(int, 10 * X))))
 
         Aix, exp = dqutor.act(X)
@@ -132,19 +132,13 @@ for x in range(n_trials):
             R = -2
             fcnt+=1
 
-        #print(K)
-        # print("copying Xx")
         Rtot += R
         xX = numpy.copy(X)
-        # print("gen'g X'")
         K,S = gen_X_primed(K, S, Aix, alpha, phi, passed, passrates[A], stretches[A], levels[A])
-        # print("encdoing X")
         X = student.encode_student(S,K)
-        # qutor.sa_update(xX, A, R, X)
-        if i==n_lessons-1:
-            R+=score
-            Rtot+=score
+        if(ls == 100):
             end = True
+            R += score
         # print("updating Q")
         dqutor.updateQ(xX, Aix, R, X, end)
         dqutor.counter += 1
@@ -154,8 +148,8 @@ for x in range(n_trials):
         # print("replay 32")
         dqutor.replay(rv)
     print(" ", score, lssns, reps)
-    scores.loc[x,["student's score","tutor's return","repeated qns","epsilon"]] = [score,Rtot,reps,dqutor.epsilon]
-scores["student's score"] = scores["student's score"].rolling(50).mean()
+    scores.loc[x,[ST_SCORE,"tutor's return","repeated qns","epsilon"]] = [score,Rtot,reps,dqutor.epsilon]
+scores[ST_SCORE] = scores[ST_SCORE].rolling(50).mean()
 scores["tutor's return"] = scores["tutor's return"].rolling(50).mean()
 
 print("s/f counts:")
@@ -164,4 +158,4 @@ print(scnt, fcnt)
 print("plotting")
 scores.plot()
 plt.show()
-plt.savefig("../../../isaac_data_files/sim2.png")
+plt.savefig("../../../isaac_data_files/ft_open.png")

@@ -27,8 +27,8 @@ class DQTutor:
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
         model = Sequential()
-        model.add(Dense(200, input_dim=override_input_dim)) #, activation='relu')) #300,100
-        model.add(Dense(200))
+        model.add(Dense(500, input_dim=override_input_dim)) #, activation='relu')) #300,100
+        model.add(Dense(500))
         model.add(Dense(self.action_size, activation='linear'))
         model.compile(loss='mse',
                       optimizer=Adam())
