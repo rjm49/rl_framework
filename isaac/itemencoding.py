@@ -21,6 +21,7 @@ n_components = 33
 s_features = 1
 q_features = 33
 k_features = 1
+n_concepts = 101
 
 def create_S(S, sprofs, ts, u, u_start_age):
     gen = sprofs.loc[int(u), "gender"]
